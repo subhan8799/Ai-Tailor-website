@@ -1,0 +1,45 @@
+.suit-list {
+    margin: 20px;
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .suit-list table {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .suit-list th,
+  .suit-list td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .suit-list .stock-out {
+    color: white;
+    background-color: rgba(255, 0, 0, 0.712);
+    padding: 5px;
+  }
+  
+  .suit-list button.edit-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: skyblue;
+    cursor: pointer;
+  }
+  
+  .suit-list button.delete-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: red;
+    cursor: pointer;
+  }
+  
+  .suit-list button:hover {
+    background-color: #ddd;
+  }
+  
