@@ -20,6 +20,9 @@ router.get('/google/callback', passport.authenticate('google', {failureRedirect:
 
 router.post('/register', upload.single('image'), authController.register)
 router.post('/login', authController.login)
+router.post('/firebase', authController.firebaseAuth)
+router.post('/forgot-password', authController.forgotPassword)
+router.post('/reset-password', authController.resetPassword)
 router.route('/checkLogin/:token').get(authController.checkLogin)
 
 

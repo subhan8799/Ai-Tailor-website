@@ -1,0 +1,81 @@
+.orders-page {
+  min-height: calc(100vh - 68px);
+  background: var(--dark);
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.orders-page h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #f0ead6;
+  margin-bottom: 6px;
+}
+.orders-subtitle { color: #a09880; font-size: 14px; margin-bottom: 32px; }
+
+.orders-grid { display: flex; flex-direction: column; gap: 16px; }
+
+.order-card {
+  background: var(--dark-3);
+  border: 1px solid rgba(201,168,76,0.1);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+.order-card:hover {
+  border-color: rgba(201,168,76,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.order-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(201,168,76,0.15);
+}
+
+.order-info {}
+.order-id { font-size: 11px; color: #6b6355; font-family: monospace; margin-bottom: 4px; }
+.order-name { font-size: 15px; font-weight: 600; color: #f0ead6; margin-bottom: 4px; }
+.order-meta { display: flex; gap: 16px; font-size: 12px; color: #a09880; }
+.order-meta span { display: flex; align-items: center; gap: 4px; }
+
+.order-right { text-align: right; }
+.order-price { font-size: 18px; font-weight: 700; color: #c9a84c; margin-bottom: 8px; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.status-pending { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+.status-processing { background: rgba(13,110,253,0.15); color: #4d9fff; border: 1px solid rgba(13,110,253,0.3); }
+.status-shipped { background: rgba(108,117,125,0.15); color: #adb5bd; border: 1px solid rgba(108,117,125,0.3); }
+.status-delivered { background: rgba(25,135,84,0.15); color: #4ade80; border: 1px solid rgba(25,135,84,0.3); }
+
+.orders-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6b6355;
+}
+.orders-empty .empty-icon { font-size: 48px; margin-bottom: 16px; }
+.orders-empty h3 { font-family: 'Playfair Display', serif; color: #a09880; margin-bottom: 8px; }
+.orders-empty a { color: #c9a84c; text-decoration: none; }
+
+@media (max-width: 600px) {
+  .order-card { grid-template-columns: 60px 1fr; }
+  .order-right { grid-column: 1 / -1; text-align: left; }
+  .orders-page { padding: 24px 16px; }
+}

@@ -1,6 +1,4 @@
-module.exports = {
-    PENDING: 'Pending',
-    PROCESSING: 'Processing',
-    SHIPPED: 'Shipped',
-    DELIVERED: 'Delivered'
-}
+export const PENDING = 'Pending';
+export const PROCESSING = 'Processing';
+export const SHIPPED = 'Shipped';
+export const DELIVERED = 'Delivered';

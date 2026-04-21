@@ -1,47 +1,40 @@
-import {SUIT, FABRIC} from '../constants/ProductTypes'
+import { apiFetch } from './api';
+import { emit } from './events';
 
-const user_id = localStorage.getItem('user_id')
-const token = localStorage.getItem('token')
-
-async function addToCart(productType, product, fabricLength = null){
-    console.log("Trying to add to cart", productType, product, fabricLength)
-    const cart = {
-        product_type: productType,
-        product_id: product,
-        fabric_length: fabricLength
-    }
-
-    const res = await fetch(
-        '/api/v1/cart',
-        {
+async function addToCart(productType, product, fabricLength = null) {
+    try {
+        const token = localStorage.getItem('token');
+        const res = await apiFetch('/api/v1/cart', {
             method: 'POST',
-            headers: {'Authorization': `Bearer ${token}`, "Content-Type" : "application/json"},
-            body: JSON.stringify(cart)
-        }
-    )
-
-    if(!res.ok) return console.error("Error Adding to cart", await res.json())
-
-    console.log('Added to Cart')
-    return res.json()
+            headers: { 'Authorization': `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ product_type: productType, product_id: product, fabric_length: fabricLength })
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        emit('cart-updated');
+        return data;
+    } catch (err) {
+        console.warn('Failed to add to cart:', err.message);
+        return null;
+    }
 }
 
-async function deleteFromCart(id){
-    const res = await fetch(
-        `/api/v1/cart/${id}`,
-        {
+async function deleteFromCart(id) {
+    try {
+        const token = localStorage.getItem('token');
+        const res = await apiFetch(`/api/v1/cart/${id}`, {
             method: 'DELETE',
-            headers: {'Authorization': `Bearer ${token}`},
-        }
-    )
-
-    if(!res.ok) return console.error("Error Deleteing from cart", await res.json())
-
-    console.log('Deleted from Cart')
-    return res.json()
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        emit('cart-updated');
+        return data;
+    } catch (err) {
+        console.warn('Failed to delete from cart:', err.message);
+        return null;
+    }
 }
 
-export default {
-    addToCart,
-    deleteFromCart
-}
+const CartAPI = { addToCart, deleteFromCart };
+export default CartAPI;

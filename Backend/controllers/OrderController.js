@@ -7,6 +7,7 @@ const Fabric = require('../models/Fabric')
 const Suit = require('../models/Suit')
 const { session } = require('passport')
 const User = require('../models/User')
+const { Notification } = require('../models/Extra')
 
 // Sends payment gatway url
 const checkout = async (req, res) => {
@@ -34,27 +35,24 @@ const checkout = async (req, res) => {
             product.price_data.product_data.name = `${fabric.name} ${fabric.color}`
             product.price_data.unit_amount = fabric.price * 100
             product.price_data.product_data.description = ProductTypes.FABRIC
-            product.price_data.product_data.id = fabric._id
         } else if (item.productType == ProductTypes.SUIT){
             var suit = await Suit.findById(item.product)
             product.price_data.product_data.name = suit.type
             product.price_data.unit_amount = suit.price * 100
             product.price_data.product_data.description = ProductTypes.SUIT
-            product.price_data.product_data.id = suit._id
         }
         products.push(product)
     }
 
+    // Use frontend origin for redirect URLs
+    const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'http://localhost:3000'
 
     const session = await Stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ["card"],
         line_items: products,
-        shipping_address_collection: {allowed_countries: ['BD']},
-        // success_url: `http://localhost:5000/api/v1/order/checkout-success?session_id={CHECKOUT_SESSION_ID}&user_id=${req.userID}`,
-        success_url: `http://localhost:3000/checkout-success?session_id={CHECKOUT_SESSION_ID}&isGift=${isGift}`,
-        cancel_url: 'http://localhost:3000/'
-
+        success_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}&isGift=${isGift}`,
+        cancel_url: `${origin}/add-to-cart`
     })
 
     res.status(StatusCodes.OK).json({ url: session.url })
@@ -119,6 +117,17 @@ const createOrder = async (req, res) => {
     // Emptying Cart
     await CartItem.deleteMany({user: userID})
 
+    // Create notification
+    try {
+        await Notification.create({
+            user: userID,
+            title: 'Order Confirmed! 🎉',
+            message: `Your order of ${orders.length} item(s) has been placed successfully. Total: £${orders.reduce((s,o) => s + (o.price||0), 0)}`,
+            type: 'order',
+            link: '/user-order-list'
+        });
+    } catch { }
+
     res.json({orders})
 }
 
@@ -182,6 +191,18 @@ const upadateStatus = async (req, res) => {
     if(!order){
         return res.status((StatusCodes.NOT_FOUND).json({ msg: "No order Found!" }))
     }
+
+    // Notify user about status change
+    try {
+        const statusEmoji = { Pending:'⏳', Processing:'✂️', Shipped:'🚚', Delivered:'✅' };
+        await Notification.create({
+            user: order.user,
+            title: `Order ${req.body.order_status} ${statusEmoji[req.body.order_status] || ''}`,
+            message: `Your order #${order._id.toString().slice(-6)} status updated to ${req.body.order_status}`,
+            type: 'order',
+            link: '/user-order-list'
+        });
+    } catch { }
 
     res.status(StatusCodes.OK).json({ order })
 }

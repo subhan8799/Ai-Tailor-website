@@ -7,7 +7,10 @@ const upload = multer({ storage });
 
 const SuitController = require('../controllers/SuitController')
 
-const authMid = require('../milddleware/authMiddleware')
+const authMid = require('../middleware/authMiddleware')
+
+router.route('/price/get')
+    .post(SuitController.getPrice)
 
 router.route('/')
     .get(SuitController.getAllSuit)
@@ -16,8 +19,5 @@ router.route('/:id')
     .get(SuitController.getSuit)
     .patch(authMid.isAuthenticated, SuitController.updateSuit)
     .delete(authMid.isAuthenticated, SuitController.deleteSuit)
-
-router.route('/price/get')
-    .post(SuitController.getPrice)
 
 module.exports = router

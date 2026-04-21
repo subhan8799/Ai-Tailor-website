@@ -1,132 +1,101 @@
 import { BrowserRouter as Router, Routes as Switch, Route, Navigate } from "react-router-dom";
 
-import Home from "./Home";
-import About from "./About";
-import Footer from "./Footer";
-import Header from "./Header";
-import Login from "./Login";
-import Register from "./Register";
-import Test from "./test";
-import Support from "./Support";
-import Fabrics from "./Fabrics";
-import DesignSuit from "./DesignSuit";
-
-// Adminpannel
-import AdminDashboard from "./AdminDashboard";
-import AdminUserList from "./AdminUserList";
-import AdminFabricList from "./AdminFabricList";
-import AdminSuitList from "./AdminSuitList";
-import AdminAccessoriesList from "./AdminAccessoriesList";
-import AdminAddProduct from "./AdminAddProduct";
-
+import Home from "../pages/Home/Home";
+import About from "../pages/About/About";
+import Footer from "./layout/Footer/Footer";
+import Header from "./layout/Header/Header";
+import Login from "../pages/Auth/Login/Login";
+import Register from "../pages/Auth/Register/Register";
+import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
+import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
+import Support from "../pages/Support/Support";
+import Fabrics from "../pages/Fabrics/Fabrics";
+import DesignSuit from "../pages/DesignSuit/DesignSuit";
+import AdminPanel from "../pages/Admin/AdminPanel/AdminPanel";
+import Profile from "../pages/Profile/Profile";
+import Reviews from "../pages/Reviews/Reviews";
+import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard/AnalyticsDashboard";
+import StyleRecommendation from "../pages/StyleRecommendation/StyleRecommendation";
+import WishlistPage from "../pages/WishlistPage/WishlistPage";
+import SizeGuide from "../pages/SizeGuide/SizeGuide";
+import FabricCompare from "../pages/FabricCompare/FabricCompare";
+import FaqPage from "../pages/FaqPage/FaqPage";
 
 import UserAPI from "../services/UserAPI";
-import AuthAPI from "../services/AuthAPI";
-import AdminChat from "./AdminChat";
+import ChatbotWidget from "./layout/ChatbotWidget/ChatbotWidget";
 import { useEffect, useState } from "react";
-import MenuBar from "./MenuBar";
-import ShoppingCart from "./ShoppingCart";
-import CheckoutSuccess from "./CheckoutSuccess"
-import ReadymadeSuit from "./ReadymadeSuit";
-import AdminOrderList from "./AdminOrderList";
-import UserOrderList from "./UserOrderList";
-
-
-const user_id = localStorage.getItem('user_id')
-const token = localStorage.getItem('token')
+import ShoppingCart from "../pages/ShoppingCart/ShoppingCart";
+import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess"
+import ReadymadeSuit from "../pages/ReadymadeSuit/ReadymadeSuit";
+import UserOrderList from "../pages/UserOrderList/UserOrderList";
+import CartEdit from "../pages/CartEdit/CartEdit";
 
 const AdminOnly = ({Component}) => {
     const [isAdmin, setIsAdmin] = useState(null)
-
     useEffect(() => {
         async function checkAdmin(){
-            let status = await UserAPI.isAdmin(user_id, token)
-            setIsAdmin(status)
+            const uid = localStorage.getItem('user_id')
+            const tok = localStorage.getItem('token')
+            setIsAdmin(await UserAPI.isAdmin(uid, tok))
         }
-
         checkAdmin()
     }, [])
-
-    // Loading State
-    if(isAdmin === null){
-        return (
-            <div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        )
-    }
-
+    if(isAdmin === null) return (
+        <div style={{display:'flex',justifyContent:'center',padding:80}}>
+            <div className="spinner-border" style={{color:'#c9a84c'}} role="status" />
+        </div>
+    )
     return isAdmin ? <Component /> : <Navigate to="/login" />
 }
 
 const LoginOnly = ({Component}) => {
-    const [isLoggedIn, setIsLoggedin] = useState(null)
-
-    useEffect(() => {
-        async function checkLog(){
-            let status = await AuthAPI.isLoggedIn()
-            setIsLoggedin(status)
-        }
-
-        checkLog()
-    }, [])
-
-    // Loading State
-    if(isLoggedIn === null){
-        return (
-            <div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        )
-    }
-
-    return isLoggedIn ? <Component /> : <Navigate to="/login" />
+    if(!localStorage.getItem('token')) return <Navigate to="/login" />
+    return <Component />
 }
 
 function Main(){
+    const user_id = localStorage.getItem('user_id')
+    const token = localStorage.getItem('token')
+
     return(
         <Router>
             <div className="App">
-            <Header user_id = {user_id} token = {token}/>
-            <Switch> 
-            {/* admin pannel */}
-            <Route path="/admin" element={< AdminOnly Component= {AdminDashboard} />} />
-            <Route path="/admin-dashboard" element={< AdminOnly Component= {AdminDashboard} />} />
-            <Route path="/admin-userlist" element={< AdminOnly Component={ AdminUserList}/>} />
-            <Route path="/admin-fabriclist" element={< AdminOnly Component= {AdminFabricList}/>} />
-            <Route path="/admin-suitlist" element={< AdminOnly Component= {AdminSuitList}/>} />
-            <Route path="/admin-accessorieslist" element={< AdminOnly Component= {AdminAccessoriesList}/>} />
-            <Route path="/admin-orderlist" element={< AdminOnly Component= {AdminOrderList}/>} />
-            <Route path="/admin-chat" element={<AdminOnly Component={AdminChat} />} />
-            <Route path="/admin-add-product" element={<AdminOnly Component={AdminAddProduct} />} />
+            <Header user_id={user_id} token={token}/>
+            <Switch>
+            {/* Admin Panel */}
+            <Route path="/admin" element={<AdminOnly Component={AdminPanel} />} />
+            <Route path="/admin/*" element={<AdminOnly Component={AdminPanel} />} />
 
-
-
-
+            {/* Public */}
             <Route path="/" element={<Home/>} />
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/support" element={<Support />} />
-            <Route path="/test" element={< Test />} />
             <Route path="/fabrics" element={<Fabrics />} />
             <Route path="/readymade-suit" element={<ReadymadeSuit />} />
             <Route path="/design" element={<DesignSuit />} />
-            <Route path="/menu" element={<MenuBar />} />
-            <Route path="/add-to-cart" element={< LoginOnly Component={ShoppingCart} />} />
-            <Route path="/user-order-list" element={< LoginOnly Component={UserOrderList} />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/style-guide" element={<StyleRecommendation />} />
+            <Route path="/size-guide" element={<SizeGuide />} />
+            <Route path="/compare" element={<FabricCompare />} />
+            <Route path="/faq" element={<FaqPage />} />
+
+            {/* Auth Required */}
+            <Route path="/profile" element={<LoginOnly Component={Profile} />} />
+            <Route path="/wishlist" element={<LoginOnly Component={WishlistPage} />} />
+            <Route path="/analytics" element={<AdminOnly Component={AnalyticsDashboard} />} />
+            <Route path="/add-to-cart" element={<LoginOnly Component={ShoppingCart} />} />
+            <Route path="/cart-edit" element={<LoginOnly Component={CartEdit} />} />
+            <Route path="/user-order-list" element={<LoginOnly Component={UserOrderList} />} />
             <Route path="/checkout-success" element={<LoginOnly Component={CheckoutSuccess} />} />
             </Switch>
             <Footer/>
-            
-            
+            <ChatbotWidget />
             </div>
         </Router>
-        
     );
 }
 export default Main;

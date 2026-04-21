@@ -1,0 +1,266 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { apiFetch, API } from '../../services/api';
+import { useToast } from '../../components/ui/Toast/Toast';
+
+const imgUrl = (p) => !p ? '' : p.startsWith('http') ? p : `${API}${p}`;
+
+function Profile() {
+    const [user, setUser] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [tab, setTab] = useState('overview');
+    const [loading, setLoading] = useState(true);
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('user_id');
+
+    useEffect(() => {
+        async function load() {
+            try {
+                const [uRes, oRes] = await Promise.all([
+                    apiFetch(`/api/v1/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    apiFetch(`/api/v1/order/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                ]);
+                const uData = await uRes.json();
+                const oData = await oRes.json();
+                setUser(uData.user);
+                setOrders(oData.orders || []);
+            } catch { }
+            setLoading(false);
+        }
+        load();
+    }, [token, userId]);
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><div className="spinner-border" style={{ color: 'var(--accent)' }} role="status" /></div>;
+
+    const tabs = [
+        { id: 'overview', label: '👤 Overview' },
+        { id: 'wardrobe', label: '👔 Wardrobe' },
+        { id: 'measurements', label: '📏 Measurements' },
+        { id: 'appointments', label: '📅 Appointments' },
+    ];
+
+    return (
+        <div style={{ minHeight: 'calc(100vh - 68px)', background: 'var(--bg)', padding: '40px 20px', maxWidth: 1100, margin: '0 auto' }}>
+            {/* Profile Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32, padding: 28, background: 'var(--bg-card)', borderRadius: 'var(--card-radius)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)' }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '3px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                    {user?.image ? <img src={imgUrl(user.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 32, color: 'var(--accent)' }}>👤</span>}
+                </div>
+                <div>
+                    <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', color: 'var(--text)', margin: 0 }}>{user?.name || user?.username}</h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '4px 0' }}>{user?.email}</p>
+                    <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📦 {orders.length} orders</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📍 {user?.address || 'No address'}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📱 {user?.phone || 'No phone'}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', paddingBottom: 0 }}>
+                {tabs.map(t => (
+                    <button key={t.id} onClick={() => setTab(t.id)} style={{
+                        padding: '10px 20px', background: 'transparent', border: 'none',
+                        borderBottom: tab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
+                        color: tab === t.id ? 'var(--accent)' : 'var(--text-muted)',
+                        fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                    }}>{t.label}</button>
+                ))}
+            </div>
+
+            {/* Overview */}
+            {tab === 'overview' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                    {[
+                        { label: 'Total Orders', val: orders.length, icon: '📦' },
+                        { label: 'Pending', val: orders.filter(o => o.status === 'Pending').length, icon: '⏳' },
+                        { label: 'Delivered', val: orders.filter(o => o.status === 'Delivered').length, icon: '✅' },
+                        { label: 'Total Spent', val: `£${orders.reduce((s, o) => s + (o.price || 0), 0)}`, icon: '💰' },
+                    ].map((s, i) => (
+                        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', padding: 24, textAlign: 'center' }}>
+                            <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-heading)' }}>{s.val}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>{s.label}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Wardrobe */}
+            {tab === 'wardrobe' && (
+                <div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 20 }}>Your past suit designs — click to reorder</p>
+                    {orders.filter(o => o.productType === 'Suit').length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
+                            <div style={{ fontSize: 48, marginBottom: 12 }}>👔</div>
+                            <p>No suits in your wardrobe yet. <Link to="/design" style={{ color: 'var(--accent)' }}>Design your first suit!</Link></p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+                            {orders.filter(o => o.productType === 'Suit').map((o, i) => (
+                                <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden' }}>
+                                    <div style={{ height: 140, background: 'color-mix(in srgb, var(--accent) 5%, var(--bg))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <img src={imgUrl(o.product?.image) || '/default_fabric.jpg'} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                                    </div>
+                                    <div style={{ padding: 16 }}>
+                                        <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{o.product?.type?.replace('_', ' ') || 'Suit'}</div>
+                                        <div style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0' }}>{o.product?.fabric?.name || ''} · {o.product?.fabric?.color || ''}</div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                                            <span style={{ fontWeight: 700, color: 'var(--accent)' }}>£{o.price}</span>
+                                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{o.timestamp?.slice(0, 10)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Measurements */}
+            {tab === 'measurements' && <SavedMeasurements />}
+
+            {/* Appointments */}
+            {tab === 'appointments' && <AppointmentBooking />}
+        </div>
+    );
+}
+
+function SavedMeasurements() {
+    const [measurements, setMeasurements] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('mz_measurements')) || {}; } catch { return {}; }
+    });
+    const fields = ['chest', 'waist', 'length', 'armLength', 'shoulder', 'neck', 'hip'];
+    const toast = useToast();
+
+    const save = () => {
+        localStorage.setItem('mz_measurements', JSON.stringify(measurements));
+        toast('Measurements saved! 💾', 'success');
+    };
+
+    return (
+        <div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 20 }}>Save your body measurements for quick reuse</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                {fields.map(f => (
+                    <div key={f} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 10, padding: 14 }}>
+                        <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 6 }}>{f}</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <input type="number" value={measurements[f] || ''} onChange={e => setMeasurements({ ...measurements, [f]: e.target.value })}
+                                style={{ flex: 1, background: 'var(--bg-input)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, padding: '8px 10px', color: 'var(--text)', fontSize: 14, outline: 'none' }} />
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>cm</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button onClick={save} style={{ padding: '10px 24px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>💾 Save Measurements</button>
+        </div>
+    );
+}
+
+function AppointmentBooking() {
+    const [appointments, setAppointments] = useState([]);
+    const [form, setForm] = useState({ type: 'virtual', date: '', timeSlot: '', notes: '' });
+    const [creating, setCreating] = useState(false);
+    const token = localStorage.getItem('token');
+    const toast = useToast();
+
+    const timeSlots = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
+
+    const loadAppointments = async () => {
+        try {
+            const res = await apiFetch('/api/v1/pro/appointments', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            setAppointments(data.appointments || []);
+        } catch { }
+    };
+
+    useEffect(() => { loadAppointments(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const book = async () => {
+        if (!form.date || !form.timeSlot) { toast('Please select date and time', 'warning'); return; }
+        try {
+            const res = await apiFetch('/api/v1/pro/appointments', {
+                method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(form)
+            });
+            if (res.ok) {
+                toast('🎉 Your appointment is booked!', 'success');
+                setCreating(false);
+                setForm({ type: 'virtual', date: '', timeSlot: '', notes: '' });
+                loadAppointments();
+            } else {
+                toast('Failed to book appointment', 'error');
+            }
+        } catch { toast('Booking failed. Try again.', 'error'); }
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>Schedule a fitting consultation</p>
+                <button onClick={() => setCreating(!creating)} style={{ padding: '8px 18px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>+ Book Appointment</button>
+            </div>
+
+            {creating && (
+                <div style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 'var(--card-radius)', padding: 24, marginBottom: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div>
+                            <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 6 }}>Type</label>
+                            <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, padding: '10px', color: 'var(--text)', fontSize: 13 }}>
+                                <option value="virtual">🖥️ Virtual Consultation</option>
+                                <option value="physical">🏪 In-Store Visit</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 6 }}>Date</label>
+                            <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={new Date().toISOString().split('T')[0]}
+                                style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, padding: '10px', color: 'var(--text)', fontSize: 13 }} />
+                        </div>
+                    </div>
+                    <div style={{ marginTop: 12 }}>
+                        <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 6 }}>Time Slot</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {timeSlots.map(t => (
+                                <button key={t} onClick={() => setForm({ ...form, timeSlot: t })} style={{
+                                    padding: '8px 14px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+                                    background: form.timeSlot === t ? 'var(--accent)' : 'var(--bg-input)',
+                                    color: form.timeSlot === t ? 'var(--bg)' : 'var(--text-secondary)',
+                                    border: form.timeSlot === t ? 'none' : '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
+                                    fontWeight: form.timeSlot === t ? 700 : 400
+                                }}>{t}</button>
+                            ))}
+                        </div>
+                    </div>
+                    <textarea placeholder="Notes (optional)" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
+                        style={{ width: '100%', marginTop: 12, background: 'var(--bg-input)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, padding: 10, color: 'var(--text)', fontSize: 13, minHeight: 60, resize: 'vertical', outline: 'none' }} />
+                    <button onClick={book} style={{ marginTop: 12, padding: '10px 24px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>📅 Confirm Booking</button>
+                </div>
+            )}
+
+            {appointments.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No appointments yet.</div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {appointments.map((a, i) => (
+                        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 12, padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{a.type === 'virtual' ? '🖥️ Virtual' : '🏪 In-Store'} Consultation</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>📅 {new Date(a.date).toLocaleDateString()} · ⏰ {a.timeSlot}</div>
+                            </div>
+                            <span style={{
+                                padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                                background: a.status === 'confirmed' ? 'rgba(46,204,113,0.15)' : a.status === 'completed' ? 'rgba(201,168,76,0.15)' : 'rgba(255,193,7,0.15)',
+                                color: a.status === 'confirmed' ? '#2ecc71' : a.status === 'completed' ? 'var(--accent)' : '#ffc107',
+                                textTransform: 'uppercase'
+                            }}>{a.status}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default Profile;

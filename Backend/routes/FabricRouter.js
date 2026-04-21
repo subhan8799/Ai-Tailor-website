@@ -7,7 +7,7 @@ const upload = multer({ storage });
 
 const fabricController = require('../controllers/FabricController')
 
-const authMid = require('../milddleware/authMiddleware')
+const authMid = require('../middleware/authMiddleware')
 
 router.route('/')
     .get(fabricController.getAllFabric)

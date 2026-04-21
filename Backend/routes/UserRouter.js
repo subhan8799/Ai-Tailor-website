@@ -3,7 +3,7 @@ const router = express.Router();
 
 const userController = require('../controllers/UserController');
 
-const authMid = require('../milddleware/authMiddleware');
+const authMid = require('../middleware/authMiddleware');
 
 // Base router: /api/v1/test
 

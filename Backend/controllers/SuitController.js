@@ -57,7 +57,7 @@ const createSuit = async (req, res) => {
         chest: req.body.chest,
         arm_length: req.body.arm_length,
         button: req.body.button,
-        image: req.file?.path
+        image: req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : (fabric.image || '')
     })
 
     res.status(StatusCodes.OK).json(suit)
@@ -66,9 +66,29 @@ const createSuit = async (req, res) => {
 const getPrice = async (req, res) => {
 
     const suitType = req.body.suit_type
-    const fabricType = req.body.fabric_type
+    const fabricId = req.body.fabric_id
     
-    res.status(StatusCodes.OK).json({ price: calculatePrice(suitType, fabricType) })
+    try {
+        // Get suit type price
+        const suitTypePrice = Number(SuitTypePrice[suitType]) || 50
+        
+        // If fabric_id is provided, get the actual fabric price
+        let fabricPrice = 0
+        if (fabricId) {
+            const fabric = await Fabric.findOne({_id: fabricId})
+            fabricPrice = fabric ? Number(fabric.price) : 60
+        } else {
+            // Fallback to fabric_type lookup if fabric_id not provided
+            const fabricType = req.body.fabric_type
+            fabricPrice = Number(FabricTypePrice[fabricType]) || 60
+        }
+        
+        const totalPrice = suitTypePrice + fabricPrice
+        res.status(StatusCodes.OK).json({ price: totalPrice })
+    } catch(err) {
+        console.error('Price calculation error:', err)
+        res.status(StatusCodes.OK).json({ price: 150 })
+    }
 }
 
 const updateSuit = async (req, res) => {

@@ -1,5 +1,3 @@
-module.exports = {
-    MALE: 'male',
-    FEMALE: 'female',
-    OTHERS: 'others'
-}
+export const MALE = 'male';
+export const FEMALE = 'female';
+export const OTHERS = 'others';

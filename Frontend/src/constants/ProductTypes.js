@@ -1,4 +1,2 @@
-module.exports = {
-    FABRIC: 'Fabric',
-    SUIT: 'Suit'
-}
+export const FABRIC = 'Fabric';
+export const SUIT = 'Suit';

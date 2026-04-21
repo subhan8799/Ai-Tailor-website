@@ -1,5 +1,3 @@
-module.exports = {
-    COTTON: 'Cotton',
-    LINEN: 'Linen',
-    VELVET: 'Velvet'
-}
+export const COTTON = 'Cotton';
+export const LINEN = 'Linen';
+export const VELVET = 'Velvet';

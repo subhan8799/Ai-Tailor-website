@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const OrderController = require('../controllers/OrderController')
-const authMid = require('../milddleware/authMiddleware')
+const authMid = require('../middleware/authMiddleware')
 
 router.route('/')
     .get([authMid.isAuthenticated, authMid.adminOnlyAccess], OrderController.getAllOrder)

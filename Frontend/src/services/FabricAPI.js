@@ -1,13 +1,16 @@
+import { apiFetch } from './api';
+
 async function getAllFabrics() {
-    const res = await fetch('/api/v1/fabric', { method: 'GET' })
-
-    if(!res.ok) return console.error("Error fetching all fabrics!")
-
-    const data = await res.json()
-    return data.fabrics
-
+    try {
+        const res = await apiFetch('/api/v1/fabric')
+        if(!res.ok) return []
+        const data = await res.json()
+        return data.fabrics || []
+    } catch(err) {
+        console.warn('Failed to fetch fabrics:', err.message)
+        return []
+    }
 }
 
-export default {
-    getAllFabrics
-}
+const FabricAPI = { getAllFabrics };
+export default FabricAPI;

@@ -33,6 +33,9 @@ const suitRoutes = require('./routes/SuitRouter')
 const chatRoutes = require('./routes/ChatRouter')
 const cartRoutes = require('./routes/CartRoutes')
 const orderRoutes = require('./routes/OrderRoutes')
+const adminRoutes = require('./routes/AdminRouter')
+const proRoutes = require('./routes/ProRoutes')
+const extraRoutes = require('./routes/ExtraRoutes')
 
 const passportMiddleware = require('./configs/passport-config')
 
@@ -43,8 +46,8 @@ const connectDB = require('./db/connect')             // Database Connection
 const port = process.env.PORT || 3000;
 
 app.use(express.json())
-// app.use(cors(corsOptions));
 app.use(cors({origin: '*'}))
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')))
 
 app.use(passportMiddleware.sessionMiddleware);
 app.use(passportMiddleware.passportInitialize);
@@ -56,6 +59,9 @@ app.use('/api/v1/suit', suitRoutes)
 app.use('/api/v1/cart', cartRoutes)
 app.use('/api/v1/order', orderRoutes)
 app.use('/api/v1/conversation', chatRoutes)
+app.use('/api/v1/admin', adminRoutes)
+app.use('/api/v1/pro', proRoutes)
+app.use('/api/v1/extra', extraRoutes)
 app.use('/auth', authRoutes);
 
 const start = async () => {
