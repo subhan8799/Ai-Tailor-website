@@ -22,7 +22,7 @@ function Register() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (k !== 'confirmPassword') fd.append(k, v); });
       if (image) fd.append('image', image);
-      const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
       const res = await fetch(`${API}/auth/register`, { method: "POST", body: fd, headers: { "ngrok-skip-browser-warning": "true" } });
       const data = await res.json();
       console.log('Register response status:', res.status, 'data:', data);
@@ -43,7 +43,7 @@ function Register() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
-      const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
       const res = await fetch(`${API}/auth/firebase`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify({ idToken })

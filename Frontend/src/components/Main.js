@@ -1,23 +1,27 @@
 import { BrowserRouter as Router, Routes as Switch, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
-import Home from "../pages/Home/Home";
-import About from "../pages/About/About";
+// Core components
 import Footer from "./layout/Footer/Footer";
 import Header from "./layout/Header/Header";
-import Login from "../pages/Auth/Login/Login";
-import Register from "../pages/Auth/Register/Register";
-import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
-import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
-import Support from "../pages/Support/Support";
-import Fabrics from "../pages/Fabrics/Fabrics";
-import DesignSuit from "../pages/DesignSuit/DesignSuit";
-import AdminPanel from "../pages/Admin/AdminPanel/AdminPanel";
-import Profile from "../pages/Profile/Profile";
-import Reviews from "../pages/Reviews/Reviews";
-import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard/AnalyticsDashboard";
-import StyleRecommendation from "../pages/StyleRecommendation/StyleRecommendation";
-import WishlistPage from "../pages/WishlistPage/WishlistPage";
-import SizeGuide from "../pages/SizeGuide/SizeGuide";
+
+// Lazy loaded pages
+const Home = lazy(() => import("../pages/Home/Home"));
+const About = lazy(() => import("../pages/About/About"));
+const Login = lazy(() => import("../pages/Auth/Login/Login"));
+const Register = lazy(() => import("../pages/Auth/Register/Register"));
+const ForgotPassword = lazy(() => import("../pages/Auth/ForgotPassword/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/Auth/ResetPassword/ResetPassword"));
+const Support = lazy(() => import("../pages/Support/Support"));
+const Fabrics = lazy(() => import("../pages/Fabrics/Fabrics"));
+const DesignSuit = lazy(() => import("../pages/DesignSuit/DesignSuit"));
+const AdminPanel = lazy(() => import("../pages/Admin/AdminPanel/AdminPanel"));
+const Profile = lazy(() => import("../pages/Profile/Profile"));
+const Reviews = lazy(() => import("../pages/Reviews/Reviews"));
+const AnalyticsDashboard = lazy(() => import("../pages/Admin/AnalyticsDashboard/AnalyticsDashboard"));
+const StyleRecommendation = lazy(() => import("../pages/StyleRecommendation/StyleRecommendation"));
+const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
+const SizeGuide = lazy(() => import("../pages/SizeGuide/SizeGuide"));
 import FabricCompare from "../pages/FabricCompare/FabricCompare";
 import FaqPage from "../pages/FaqPage/FaqPage";
 
@@ -57,10 +61,17 @@ function Main(){
     const user_id = localStorage.getItem('user_id')
     const token = localStorage.getItem('token')
 
+    const LoadingSpinner = () => (
+        <div style={{display:'flex',justifyContent:'center',padding:80}}>
+            <div className="spinner-border" style={{color:'#c9a84c'}} role="status" />
+        </div>
+    );
+
     return(
         <Router>
             <div className="App">
             <Header user_id={user_id} token={token}/>
+            <Suspense fallback={<LoadingSpinner />}>
             <Switch>
             {/* Admin Panel */}
             <Route path="/admin" element={<AdminOnly Component={AdminPanel} />} />
@@ -92,6 +103,7 @@ function Main(){
             <Route path="/user-order-list" element={<LoginOnly Component={UserOrderList} />} />
             <Route path="/checkout-success" element={<LoginOnly Component={CheckoutSuccess} />} />
             </Switch>
+            </Suspense>
             <Footer/>
             <ChatbotWidget />
             </div>

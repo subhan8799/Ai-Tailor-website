@@ -19,10 +19,25 @@ const updateUser = async (req, res) => {
         username: req.body?.username,
         name: req.body?.name,
         gender: req.body?.gender,
-        dob: req.body?.dob
+        dob: req.body?.dob,
+        address: req.body?.address,
+        phone: req.body?.phone
     }
 
     const user = await User.findOneAndUpdate({_id: userID}, newInfo, {new:true, runValidators:true})
+
+    if (!user){
+        return res.status(StatusCodes.NOT_FOUND).json( {msg: `No user found with id: ${userID}`} )
+    }
+
+    res.status(StatusCodes.OK).json({ user })
+}
+
+const updateUserImage = async (req, res) => {
+    const {id:userID} = req.params
+    const imagePath = req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : '';
+
+    const user = await User.findOneAndUpdate({_id: userID}, { image: imagePath }, {new:true, runValidators:true})
 
     if (!user){
         return res.status(StatusCodes.NOT_FOUND).json( {msg: `No user found with id: ${userID}`} )
@@ -66,6 +81,7 @@ const getAllUsers = async (req,res) => {
 module.exports = {
     getUser,
     updateUser,
+    updateUserImage,
     getAllUsers,
     deleteUser,
     updateAdmin

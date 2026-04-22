@@ -3,15 +3,28 @@ require('express-async-errors');
 const cors = require('cors')
 const http = require('http')
 const socketio = require('socket.io')
+const compression = require('compression')
 
 const express = require('express');
 const app = express();
 
+// Performance optimizations
+app.use(compression()); // Enable gzip compression
+app.use((req, res, next) => {
+    // Set cache headers for static files
+    if (req.path.startsWith('/uploads')) {
+        res.set('Cache-Control', 'public, max-age=86400'); // 24 hours
+    }
+    next();
+});
+
 const allowedOrigins = [
     "https://tailor-maven-app.vercel.app",
     "https://tailor-maven-app.vercel.app/",
-    "http://localhost:5000",
-    "http://localhost:5000/",
+    "http://localhost:3000",
+    "http://localhost:3000/",
+    "http://localhost:3002",
+    "http://localhost:3002/",
     ];
 
 const corsOptions = {
@@ -23,7 +36,7 @@ const corsOptions = {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true, // Allow cookies if needed
+    credentials: true,
 };
 
 const authRoutes = require('./routes/authRoutes');
@@ -41,13 +54,15 @@ const passportMiddleware = require('./configs/passport-config')
 
 const chatController = require('./controllers/ChatController')
 
-const connectDB = require('./db/connect')             // Database Connection
+const connectDB = require('./db/connect')
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(cors({origin: '*'}))
-app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')))
+const uploadsPath = require('path').resolve(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsPath))
 
 app.use(passportMiddleware.sessionMiddleware);
 app.use(passportMiddleware.passportInitialize);

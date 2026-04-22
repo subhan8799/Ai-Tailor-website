@@ -1,4 +1,4 @@
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API = 'http://localhost:5000';
 
 async function apiFetch(path, options = {}) {
     const headers = {

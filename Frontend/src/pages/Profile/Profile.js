@@ -10,8 +10,12 @@ function Profile() {
     const [orders, setOrders] = useState([]);
     const [tab, setTab] = useState('overview');
     const [loading, setLoading] = useState(true);
+    const [imageFile, setImageFile] = useState(null);
+    const [editing, setEditing] = useState(false);
+    const [editData, setEditData] = useState({ name: '', address: '', phone: '' });
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('user_id');
+    const toast = useToast();
 
     useEffect(() => {
         async function load() {
@@ -24,11 +28,55 @@ function Profile() {
                 const oData = await oRes.json();
                 setUser(uData.user);
                 setOrders(oData.orders || []);
+                setEditData({ name: uData.user.name || '', address: uData.user.address || '', phone: uData.user.phone || '' });
             } catch { }
             setLoading(false);
         }
         load();
     }, [token, userId]);
+
+    const handleImageUpload = async () => {
+        if (!imageFile) return;
+        const fd = new FormData();
+        fd.append('image', imageFile);
+        try {
+            const res = await fetch(`${API}/api/v1/user/${userId}/image`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: fd
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+                setImageFile(null);
+                toast('Profile image updated! 📸', 'success');
+            } else {
+                toast('Failed to update image', 'error');
+            }
+        } catch {
+            toast('Error updating image', 'error');
+        }
+    };
+
+    const handleSaveInfo = async () => {
+        try {
+            const res = await fetch(`${API}/api/v1/user/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(editData)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+                setEditing(false);
+                toast('Profile updated! 💾', 'success');
+            } else {
+                toast('Failed to update profile', 'error');
+            }
+        } catch {
+            toast('Error updating profile', 'error');
+        }
+    };
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><div className="spinner-border" style={{ color: 'var(--accent)' }} role="status" /></div>;
 
@@ -43,10 +91,15 @@ function Profile() {
         <div style={{ minHeight: 'calc(100vh - 68px)', background: 'var(--bg)', padding: '40px 20px', maxWidth: 1100, margin: '0 auto' }}>
             {/* Profile Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32, padding: 28, background: 'var(--bg-card)', borderRadius: 'var(--card-radius)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)' }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '3px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                    {user?.image ? <img src={imgUrl(user.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 32, color: 'var(--accent)' }}>👤</span>}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '3px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {user?.image ? <img src={imgUrl(user.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} /> : null}
+                        <span style={{ fontSize: 32, color: 'var(--accent)', display: user?.image ? 'none' : 'block' }}>👤</span>
+                    </div>
+                    <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
+                    <div style={{ position: 'absolute', bottom: -5, right: -5, background: 'var(--accent)', color: 'var(--bg)', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>📷</div>
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                     <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', color: 'var(--text)', margin: 0 }}>{user?.name || user?.username}</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '4px 0' }}>{user?.email}</p>
                     <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
@@ -54,8 +107,40 @@ function Profile() {
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📍 {user?.address || 'No address'}</span>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📱 {user?.phone || 'No phone'}</span>
                     </div>
+                    <button onClick={() => setEditing(!editing)} style={{ marginTop: 12, padding: '6px 12px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontSize: 12, cursor: 'pointer' }}>{editing ? 'Cancel Edit' : 'Edit Info'}</button>
+                    {imageFile && (
+                        <div style={{ marginTop: 12 }}>
+                            <button onClick={handleImageUpload} style={{ padding: '6px 12px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontSize: 12, cursor: 'pointer' }}>Upload Image</button>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{imageFile.name}</span>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Edit Profile */}
+            {editing && (
+                <div style={{ marginBottom: 32, padding: 28, background: 'var(--bg-card)', borderRadius: 'var(--card-radius)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)' }}>
+                    <h3 style={{ margin: 0, marginBottom: 16, color: 'var(--text)' }}>Edit Profile</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                        <div>
+                            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Name</label>
+                            <input value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, background: 'var(--bg-input)', color: 'var(--text)', outline: 'none' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Address</label>
+                            <input value={editData.address} onChange={e => setEditData({...editData, address: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, background: 'var(--bg-input)', color: 'var(--text)', outline: 'none' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Phone</label>
+                            <input value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, background: 'var(--bg-input)', color: 'var(--text)', outline: 'none' }} />
+                        </div>
+                    </div>
+                    <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                        <button onClick={handleSaveInfo} style={{ padding: '8px 16px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', cursor: 'pointer' }}>Save</button>
+                        <button onClick={() => setEditing(false)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 'var(--btn-radius)', color: 'var(--text)', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', paddingBottom: 0 }}>

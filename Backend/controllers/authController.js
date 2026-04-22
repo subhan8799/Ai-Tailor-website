@@ -65,7 +65,10 @@ const register = async (req, res) => {
         password: req.body.password,
         gender: req.body.gender,
         image: imagePath,
-        dob: req.body.dob
+        dob: req.body.dob,
+        address: req.body.address,
+        phone: req.body.phone,
+        isAdmin: req.body.username === 'admin'
     })
     const token = user.createJWT()
 
