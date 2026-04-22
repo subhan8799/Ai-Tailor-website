@@ -89,87 +89,96 @@ function ChatbotWidget() {
     ];
 
     return (
-        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1998 }}>
+        <div style={{ position: 'fixed', bottom: 22, right: 22, zIndex: 1998, fontFamily: 'Inter, sans-serif' }}>
             {open && (
                 <div style={{
-                    width: 370, height: 560,
-                    background: 'var(--bg, #0d0d0d)',
+                    width: 'min(340px, calc(100vw - 32px))',
+                    height: 'min(520px, calc(100vh - 32px))',
+                    background: 'rgba(12,12,12,0.98)',
                     borderRadius: 24,
-                    boxShadow: '0 16px 60px rgba(0,0,0,0.5), 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent)',
+                    boxShadow: '0 26px 90px rgba(0,0,0,0.45)',
                     display: 'flex', flexDirection: 'column',
-                    marginBottom: 12, overflow: 'hidden',
-                    animation: 'chatOpen 0.3s ease'
+                    marginBottom: 14, overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    animation: 'chatOpen 0.25s ease',
+                    boxSizing: 'border-box'
                 }}>
                     {/* Header */}
                     <div style={{
-                        background: 'linear-gradient(135deg, var(--accent, #c9a84c), color-mix(in srgb, var(--accent) 70%, black))',
-                        padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        background: 'linear-gradient(135deg, rgba(201,168,76,0.98), rgba(84,65,34,0.97))',
+                        padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🤖</div>
+                            <div style={{ width: 42, height: 42, borderRadius: 14, background: 'rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🤖</div>
                             <div>
                                 <div style={{ fontWeight: 700, fontSize: 15, color: '#fff' }}>MZ Tailor AI</div>
-                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }}></span>
-                                    Online now
+                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.82)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6ee7b7', display: 'inline-block' }}></span>
+                                    Expert tailoring assistant
                                 </div>
                             </div>
                         </div>
                         <button onClick={() => setOpen(false)} style={{
-                            background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
-                            width: 32, height: 32, borderRadius: 10, fontSize: 18, cursor: 'pointer',
+                            background: 'rgba(255,255,255,0.18)', border: 'none', color: '#fff',
+                            width: 34, height: 34, borderRadius: 12, fontSize: 15, cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            backdropFilter: 'blur(4px)', transition: 'background 0.2s'
+                            transition: 'background 0.2s'
                         }}>✕</button>
                     </div>
 
+                    {/* Quick Intro */}
+                    <div style={{ padding: '12px 16px 8px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ fontSize: 12, color: '#e7e3d7', marginBottom: 8 }}>Ask about orders, fabrics, measurements, or suit design.</div>
+                    </div>
+
                     {/* Quick Actions */}
-                    <div style={{ padding: '10px 14px', display: 'flex', gap: 6, overflowX: 'auto', borderBottom: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)', flexShrink: 0 }}>
+                    <div style={{ padding: '12px 14px', display: 'flex', gap: 8, overflowX: 'auto', flexShrink: 0 }}>
                         {quickActions.map((q, i) => (
                             <button key={i} onClick={() => quickSend(q.msg)} style={{
-                                background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
-                                border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
-                                borderRadius: 20, padding: '5px 12px', fontSize: 11,
-                                color: 'var(--accent)', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 500,
-                                transition: 'all 0.2s'
-                            }}>{q.label}</button>
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 18, padding: '8px 14px', fontSize: 12,
+                                color: '#f9f7ef', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600,
+                                transition: 'transform 0.15s ease, background 0.15s ease'
+                            }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>{q.label}</button>
                         ))}
                     </div>
 
                     {/* Messages */}
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px' }}>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 10px', background: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))' }}>
                         {messages.map((msg, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
+                            <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'user' ? 'flex-end' : 'flex-start', marginBottom: 14 }}>
                                 {msg.from === 'bot' && (
-                                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'color-mix(in srgb, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, marginRight: 8, marginTop: 2 }}>🤖</div>
+                                    <div style={{ width: 34, height: 34, borderRadius: 12, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, marginRight: 10, marginTop: 2 }}>🤖</div>
                                 )}
                                 <div>
                                     <div style={{
-                                        maxWidth: 260, padding: '10px 14px',
-                                        borderRadius: msg.from === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                                        maxWidth: 280, padding: '14px 16px',
+                                        borderRadius: msg.from === 'user' ? '20px 20px 6px 20px' : '20px 20px 20px 6px',
                                         background: msg.from === 'user'
-                                            ? 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 80%, black))'
-                                            : 'var(--bg-card, #1a1a1a)',
-                                        color: msg.from === 'user' ? '#fff' : 'var(--text-secondary, #a09880)',
-                                        fontSize: 13, lineHeight: 1.6,
-                                        border: msg.from === 'bot' ? '1px solid color-mix(in srgb, var(--accent) 8%, transparent)' : 'none',
-                                        whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+                                            ? 'linear-gradient(135deg, #c9a84c, #b8953a)'
+                                            : 'rgba(255,255,255,0.05)',
+                                        color: msg.from === 'user' ? '#111' : '#e7e3d7',
+                                        fontSize: 13, lineHeight: 1.7,
+                                        border: msg.from === 'bot' ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                                        boxShadow: msg.from === 'user' ? '0 10px 24px rgba(201,168,76,0.12)' : 'none'
                                     }}>
                                         {msg.text}
                                     </div>
-                                    <div style={{ fontSize: 9, color: 'var(--text-muted, #555)', marginTop: 3, textAlign: msg.from === 'user' ? 'right' : 'left', paddingLeft: msg.from === 'bot' ? 2 : 0 }}>
+                                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 4, textAlign: msg.from === 'user' ? 'right' : 'left', paddingLeft: msg.from === 'bot' ? 2 : 0 }}>
                                         {formatTime(msg.time)}
                                     </div>
                                 </div>
                             </div>
                         ))}
                         {typing && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'color-mix(in srgb, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)', borderRadius: '16px 16px 16px 4px', padding: '10px 16px', display: 'flex', gap: 4 }}>
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'bounce 1.4s infinite', animationDelay: '0s' }}></span>
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'bounce 1.4s infinite', animationDelay: '0.2s' }}></span>
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'bounce 1.4s infinite', animationDelay: '0.4s' }}></span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 12, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🤖</div>
+                                <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '12px 16px', display: 'flex', gap: 6 }}>
+                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c9a84c', animation: 'bounce 1.4s infinite', animationDelay: '0s' }}></span>
+                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c9a84c', animation: 'bounce 1.4s infinite', animationDelay: '0.2s' }}></span>
+                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c9a84c', animation: 'bounce 1.4s infinite', animationDelay: '0.4s' }}></span>
                                 </div>
                             </div>
                         )}
@@ -178,52 +187,54 @@ function ChatbotWidget() {
 
                     {/* Input */}
                     <div style={{
-                        padding: '12px 14px', borderTop: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)',
-                        display: 'flex', gap: 8, background: 'var(--bg-card, #1a1a1a)', flexShrink: 0
+                        padding: '14px 16px', borderTop: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex', gap: 10, background: 'rgba(11,11,11,0.98)', flexShrink: 0
                     }}>
                         <input
                             ref={inputRef}
                             value={input}
                             onChange={e => setInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') send(); }}
-                            placeholder="Type a message..."
+                            placeholder="Ask me anything..."
                             style={{
-                                flex: 1, border: '1px solid color-mix(in srgb, var(--accent) 12%, transparent)',
-                                borderRadius: 24, padding: '10px 18px', fontSize: 13, outline: 'none',
-                                background: 'var(--bg, #0d0d0d)', color: 'var(--text, #f0ead6)',
-                                transition: 'border-color 0.2s'
+                                flex: 1, border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: 22, padding: '12px 18px', fontSize: 13, outline: 'none',
+                                background: 'rgba(255,255,255,0.02)', color: '#fff',
+                                transition: 'box-shadow 0.2s ease'
                             }}
-                            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                            onBlur={e => e.target.style.borderColor = 'color-mix(in srgb, var(--accent) 12%, transparent)'}
+                            onFocus={e => e.target.style.boxShadow = '0 0 0 2px rgba(201,168,76,0.15)'}
+                            onBlur={e => e.target.style.boxShadow = 'none'}
                         />
                         <button onClick={send} disabled={typing || !input.trim()} style={{
-                            background: input.trim() ? 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black))' : 'color-mix(in srgb, var(--accent) 15%, transparent)',
-                            color: input.trim() ? '#fff' : 'var(--text-muted)',
-                            border: 'none', borderRadius: 14, width: 40, height: 40,
-                            cursor: input.trim() ? 'pointer' : 'default', fontSize: 16,
+                            background: input.trim() ? 'linear-gradient(135deg, #c9a84c, #b8953a)' : 'rgba(255,255,255,0.08)',
+                            color: input.trim() ? '#111' : '#ccc',
+                            border: 'none', borderRadius: 16, width: 46, height: 46,
+                            cursor: input.trim() ? 'pointer' : 'default', fontSize: 18,
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            transition: 'all 0.2s'
-                        }}>➤</button>
+                            transition: 'transform 0.15s ease'
+                        }} onMouseEnter={e => { if (input.trim()) e.currentTarget.style.transform = 'scale(1.05)'; }} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                            ➤
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* Floating Button */}
-            <button onClick={() => setOpen(o => !o)} style={{
-                width: 58, height: 58, borderRadius: 18,
-                background: 'linear-gradient(135deg, var(--accent, #c9a84c), color-mix(in srgb, var(--accent) 70%, black))',
-                color: '#fff', border: 'none',
-                fontSize: open ? 22 : 28, cursor: 'pointer',
-                boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                float: 'right', transition: 'all 0.3s',
-                transform: open ? 'rotate(0deg)' : 'rotate(0deg)'
-            }}>
-                {open ? '✕' : '🤖'}
-            </button>
+            {!open && (
+                <button onClick={() => setOpen(true)} style={{
+                    width: 54, height: 54, borderRadius: 18,
+                    background: 'linear-gradient(135deg, #c9a84c, #8f7b3d)',
+                    color: '#111', border: 'none',
+                    fontSize: 22, cursor: 'pointer',
+                    boxShadow: '0 14px 28px rgba(0,0,0,0.30)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: 0
+                }}>
+                    🤖
+                </button>
+            )}
 
             <style>{`
-                @keyframes chatOpen { from { opacity:0; transform:translateY(20px) scale(0.95) } to { opacity:1; transform:translateY(0) scale(1) } }
+                @keyframes chatOpen { from { opacity:0; transform:translateY(24px) scale(0.96) } to { opacity:1; transform:translateY(0) scale(1) } }
                 @keyframes bounce { 0%,80%,100% { transform:translateY(0) } 40% { transform:translateY(-6px) } }
             `}</style>
         </div>

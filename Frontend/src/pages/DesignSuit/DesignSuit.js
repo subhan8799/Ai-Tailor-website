@@ -133,10 +133,10 @@ function Visualize(){
 
 
     return (
-        <div className="mt-3 row justify-content-center align-items-start">
+        <div className="mt-3 row justify-content-center align-items-start" style={{minHeight: '100vh'}}>
 
             {/* Material Selection */}
-            <div className="col-3 overflow-y-auto" style={{height: 680}}>
+            <div className="col-3 overflow-y-auto" style={{height: 'calc(100vh - 120px)', paddingRight: '20px'}}>
             <h2>Select materials</h2>
                 <div className="d-flex flex-column gap-2 mt-3">
                     {fabricsLoading ? (
@@ -186,8 +186,8 @@ function Visualize(){
             </div>
 
             {/* Showing 3D model */}
-            <div className="col-4">
-                <Canvas ref={ref} gl={{ preserveDrawingBuffer: true }} camera={{ position: [5, 5, 5], fov: 35 }} castShadow style={{height: 500}}>
+            <div className="col-4 d-flex flex-column align-items-center" style={{padding: '0 20px'}}>
+                <Canvas ref={ref} gl={{ preserveDrawingBuffer: true }} camera={{ position: [5, 5, 5], fov: 35 }} castShadow style={{height: 500, width: '100%', borderRadius: '12px', overflow: 'hidden'}}>
                     <ambientLight intensity={Math.PI / 2} />
                     <directionalLight castShadow position={[0, 15, 40]} intensity={Math.PI * 2}/>
                     <directionalLight castShadow position={[0, 0, -40]} intensity={Math.PI * 2}/>
@@ -200,10 +200,30 @@ function Visualize(){
                     <OrbitControls autoRotate autoRotateSpeed={1} enablePan={false} minPolarAngle={Math.PI / 2.1} maxPolarAngle={Math.PI / 2.1} /> 
                     
                 </Canvas>
+
+                {/* Suit Preview Info */}
+                {selectedFabric && suitType && (
+                    <div style={{
+                        marginTop: '16px',
+                        padding: '12px 16px',
+                        background: 'rgba(201,168,76,0.08)',
+                        border: '1px solid rgba(201,168,76,0.2)',
+                        borderRadius: '8px',
+                        width: '100%',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{fontSize: '12px', color: '#a09880', marginBottom: '4px'}}>
+                            Selected Configuration
+                        </div>
+                        <div style={{fontSize: '14px', fontWeight: '600', color: '#c9a84c'}}>
+                            {suitType?.replace('_', ' ')} • {selectedFabric?.name}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Suit Type & Measurements */}
-            <div className="col-3 ">
+            <div className="col-4 overflow-y-auto" style={{height: 'calc(100vh - 120px)', paddingLeft: '20px'}}>
 
                 <h2>Select Type</h2>
                 <div className="d-flex flex-wrap gap-3 mb-4">
@@ -257,31 +277,304 @@ function Visualize(){
                 </div>
 
                 <h2>Measurements</h2>
-                <SizeRecommendation onApply={(m) => {
-                    setChest(m.chest); setWaist(m.waist); setLength(m.length); setArmLength(m.armLength);
-                }} />
-                <MeasurementEstimator onMeasurementsDetected={(m) => {
-                    setChest(m.chest)
-                    setWaist(m.waist)
-                    setLength(m.length)
-                    setArmLength(m.armLength)
-                }} />
-                <div className="row row-cols-2 g-3 mb-5">
-                    <div className="form-floating">
-                        <input type="number" className="form-control" value={length || ''} onChange={(e) => {setLength(e.target.value)}} id="length" style={{resize: "none"}}/>
-                        <label className="ms-2 text-secondary" htmlFor="length">Length</label>
+
+                {/* Measurement Methods */}
+                <div style={{marginBottom: 24}}>
+                    <div style={{
+                        background: 'rgba(201,168,76,0.08)',
+                        border: '1px solid rgba(201,168,76,0.2)',
+                        borderRadius: 12,
+                        padding: '20px',
+                        marginBottom: 16
+                    }}>
+                        <div style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: '#c9a84c',
+                            marginBottom: 16,
+                            textAlign: 'center'
+                        }}>
+                            📏 Choose Your Measurement Method
+                        </div>
+
+                        {/* Smart Size Finder */}
+                        <div style={{marginBottom: 16}}>
+                            <div style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: '#a09880',
+                                textTransform: 'uppercase',
+                                letterSpacing: 1,
+                                marginBottom: 8
+                            }}>
+                                🧠 Smart Size Finder
+                            </div>
+                            <SizeRecommendation onApply={(m) => {
+                                setChest(m.chest); setWaist(m.waist); setLength(m.length); setArmLength(m.armLength);
+                            }} />
+                        </div>
+
+                        {/* AI Body Scanner */}
+                        <div style={{marginBottom: 16}}>
+                            <div style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: '#a09880',
+                                textTransform: 'uppercase',
+                                letterSpacing: 1,
+                                marginBottom: 8
+                            }}>
+                                📸 AI Body Scanner
+                            </div>
+                            <MeasurementEstimator onMeasurementsDetected={(m) => {
+                                setChest(m.chest)
+                                setWaist(m.waist)
+                                setLength(m.length)
+                                setArmLength(m.armLength)
+                            }} />
+                        </div>
                     </div>
-                    <div className="form-floating">
-                        <input type="number" className="form-control" value={waist || ''} onChange={(e) => {setWaist(e.target.value)}} id="waist" style={{resize: "none"}}/>
-                        <label className="ms-2 text-secondary" htmlFor="waist">Waist</label>
-                    </div>
-                    <div className="form-floating">
-                        <input type="number" className="form-control" value={chest || ''} onChange={(e) => {setChest(e.target.value)}} id="chest" style={{resize: "none"}}/>
-                        <label className="ms-2 text-secondary" htmlFor="chest">Chest</label>
-                    </div>
-                    <div className="form-floating">
-                        <input type="number" className="form-control" value={armLength || ''} onChange={(e) => {setArmLength(e.target.value)}} id="arm-length" style={{resize: "none"}}/>
-                        <label className="ms-2 text-secondary" htmlFor="arm-ength">Arm Length</label>
+
+                    {/* Manual Input Section */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(201,168,76,0.15)',
+                        borderRadius: 12,
+                        padding: '20px'
+                    }}>
+                        <div style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#a09880',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                            marginBottom: 16,
+                            textAlign: 'center'
+                        }}>
+                            ✏️ Manual Entry (cm)
+                        </div>
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '16px',
+                            marginBottom: 16
+                        }}>
+                            {/* Length */}
+                            <div style={{
+                                background: 'rgba(201,168,76,0.05)',
+                                border: '1px solid rgba(201,168,76,0.2)',
+                                borderRadius: 8,
+                                padding: '12px',
+                                position: 'relative'
+                            }}>
+                                <label style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    left: '12px',
+                                    background: '#1a1a1a',
+                                    padding: '0 8px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    color: '#c9a84c',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5
+                                }}>
+                                    👕 Length
+                                </label>
+                                <input
+                                    type="number"
+                                    value={length || ''}
+                                    onChange={(e) => {setLength(e.target.value)}}
+                                    placeholder="180"
+                                    style={{
+                                        width: '100%',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: '#f0ead6',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        padding: '8px 0',
+                                        textAlign: 'center'
+                                    }}
+                                />
+                                <div style={{
+                                    fontSize: '10px',
+                                    color: '#a09880',
+                                    textAlign: 'center',
+                                    marginTop: '4px'
+                                }}>
+                                    cm
+                                </div>
+                            </div>
+
+                            {/* Waist */}
+                            <div style={{
+                                background: 'rgba(201,168,76,0.05)',
+                                border: '1px solid rgba(201,168,76,0.2)',
+                                borderRadius: 8,
+                                padding: '12px',
+                                position: 'relative'
+                            }}>
+                                <label style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    left: '12px',
+                                    background: '#1a1a1a',
+                                    padding: '0 8px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    color: '#c9a84c',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5
+                                }}>
+                                    🎯 Waist
+                                </label>
+                                <input
+                                    type="number"
+                                    value={waist || ''}
+                                    onChange={(e) => {setWaist(e.target.value)}}
+                                    placeholder="85"
+                                    style={{
+                                        width: '100%',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: '#f0ead6',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        padding: '8px 0',
+                                        textAlign: 'center'
+                                    }}
+                                />
+                                <div style={{
+                                    fontSize: '10px',
+                                    color: '#a09880',
+                                    textAlign: 'center',
+                                    marginTop: '4px'
+                                }}>
+                                    cm
+                                </div>
+                            </div>
+
+                            {/* Chest */}
+                            <div style={{
+                                background: 'rgba(201,168,76,0.05)',
+                                border: '1px solid rgba(201,168,76,0.05)',
+                                borderRadius: 8,
+                                padding: '12px',
+                                position: 'relative'
+                            }}>
+                                <label style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    left: '12px',
+                                    background: '#1a1a1a',
+                                    padding: '0 8px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    color: '#c9a84c',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5
+                                }}>
+                                    💪 Chest
+                                </label>
+                                <input
+                                    type="number"
+                                    value={chest || ''}
+                                    onChange={(e) => {setChest(e.target.value)}}
+                                    placeholder="100"
+                                    style={{
+                                        width: '100%',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: '#f0ead6',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        padding: '8px 0',
+                                        textAlign: 'center'
+                                    }}
+                                />
+                                <div style={{
+                                    fontSize: '10px',
+                                    color: '#a09880',
+                                    textAlign: 'center',
+                                    marginTop: '4px'
+                                }}>
+                                    cm
+                                </div>
+                            </div>
+
+                            {/* Arm Length */}
+                            <div style={{
+                                background: 'rgba(201,168,76,0.05)',
+                                border: '1px solid rgba(201,168,76,0.2)',
+                                borderRadius: 8,
+                                padding: '12px',
+                                position: 'relative'
+                            }}>
+                                <label style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    left: '12px',
+                                    background: '#1a1a1a',
+                                    padding: '0 8px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    color: '#c9a84c',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5
+                                }}>
+                                    🦾 Arm Length
+                                </label>
+                                <input
+                                    type="number"
+                                    value={armLength || ''}
+                                    onChange={(e) => {setArmLength(e.target.value)}}
+                                    placeholder="65"
+                                    style={{
+                                        width: '100%',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: '#f0ead6',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        padding: '8px 0',
+                                        textAlign: 'center'
+                                    }}
+                                />
+                                <div style={{
+                                    fontSize: '10px',
+                                    color: '#a09880',
+                                    textAlign: 'center',
+                                    marginTop: '4px'
+                                }}>
+                                    cm
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Measurement Tips */}
+                        <div style={{
+                            background: 'rgba(201,168,76,0.05)',
+                            border: '1px solid rgba(201,168,76,0.15)',
+                            borderRadius: 8,
+                            padding: '12px',
+                            fontSize: '11px',
+                            color: '#a09880',
+                            lineHeight: 1.4
+                        }}>
+                            <div style={{fontWeight: 600, color: '#c9a84c', marginBottom: 4}}>
+                                💡 Measurement Tips:
+                            </div>
+                            • Length: From shoulder to desired suit length<br/>
+                            • Waist: Around natural waistline<br/>
+                            • Chest: Around fullest part of chest<br/>
+                            • Arm: From shoulder to wrist
+                        </div>
                     </div>
                 </div>
                 

@@ -225,21 +225,166 @@ function SavedMeasurements() {
     };
 
     return (
-        <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 20 }}>Save your body measurements for quick reuse</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
-                {fields.map(f => (
-                    <div key={f} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 10, padding: 14 }}>
-                        <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 6 }}>{f}</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="number" value={measurements[f] || ''} onChange={e => setMeasurements({ ...measurements, [f]: e.target.value })}
-                                style={{ flex: 1, background: 'var(--bg-input)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, padding: '8px 10px', color: 'var(--text)', fontSize: 14, outline: 'none' }} />
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>cm</span>
-                        </div>
-                    </div>
-                ))}
+        <div style={{padding: '20px 0'}}>
+            {/* Header */}
+            <div style={{
+                background: 'rgba(201,168,76,0.08)',
+                border: '1px solid rgba(201,168,76,0.2)',
+                borderRadius: 12,
+                padding: '16px 20px',
+                marginBottom: 24,
+                textAlign: 'center'
+            }}>
+                <div style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: '#c9a84c',
+                    marginBottom: 4
+                }}>
+                    📏 Your Saved Measurements
+                </div>
+                <div style={{
+                    fontSize: 13,
+                    color: '#a09880',
+                    lineHeight: 1.4
+                }}>
+                    Save your body measurements for quick reuse in future orders
+                </div>
             </div>
-            <button onClick={save} style={{ padding: '10px 24px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>💾 Save Measurements</button>
+
+            {/* Measurement Grid */}
+            <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(201,168,76,0.15)',
+                borderRadius: 12,
+                padding: '20px'
+            }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '16px',
+                    marginBottom: 24
+                }}>
+                    {fields.map(f => (
+                        <div key={f} style={{
+                            background: 'rgba(201,168,76,0.05)',
+                            border: '1px solid rgba(201,168,76,0.2)',
+                            borderRadius: 8,
+                            padding: '12px',
+                            position: 'relative'
+                        }}>
+                            <label style={{
+                                position: 'absolute',
+                                top: '-8px',
+                                left: '12px',
+                                background: '#1a1a1a',
+                                padding: '0 8px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: '#c9a84c',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.5
+                            }}>
+                                {f === 'chest' && '💪 Chest'}
+                                {f === 'waist' && '🎯 Waist'}
+                                {f === 'length' && '👕 Length'}
+                                {f === 'armLength' && '🦾 Arm Length'}
+                                {f === 'shoulder' && '🤷 Shoulder'}
+                                {f === 'neck' && '🧣 Neck'}
+                                {f === 'hip' && '🦵 Hip'}
+                            </label>
+                            <input
+                                type="number"
+                                value={measurements[f] || ''}
+                                onChange={e => setMeasurements({ ...measurements, [f]: e.target.value })}
+                                placeholder={
+                                    f === 'chest' ? '100' :
+                                    f === 'waist' ? '85' :
+                                    f === 'length' ? '180' :
+                                    f === 'armLength' ? '65' :
+                                    f === 'shoulder' ? '45' :
+                                    f === 'neck' ? '40' :
+                                    '95'
+                                }
+                                style={{
+                                    width: '100%',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    outline: 'none',
+                                    color: '#f0ead6',
+                                    fontSize: '14px',
+                                    fontWeight: 500,
+                                    padding: '8px 0',
+                                    textAlign: 'center'
+                                }}
+                            />
+                            <div style={{
+                                fontSize: '10px',
+                                color: '#a09880',
+                                textAlign: 'center',
+                                marginTop: '4px'
+                            }}>
+                                cm
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Measurement Tips */}
+                <div style={{
+                    background: 'rgba(201,168,76,0.05)',
+                    border: '1px solid rgba(201,168,76,0.15)',
+                    borderRadius: 8,
+                    padding: '12px',
+                    fontSize: '11px',
+                    color: '#a09880',
+                    lineHeight: 1.4,
+                    marginBottom: 20
+                }}>
+                    <div style={{fontWeight: 600, color: '#c9a84c', marginBottom: 4}}>
+                        💡 Measurement Tips:
+                    </div>
+                    • Chest: Around fullest part under arms<br/>
+                    • Waist: Around natural waistline<br/>
+                    • Length: From shoulder to desired suit length<br/>
+                    • Arm: From shoulder to wrist<br/>
+                    • Shoulder: Across back from shoulder seam to seam<br/>
+                    • Neck: Around base of neck<br/>
+                    • Hip: Around fullest part of hips
+                </div>
+
+                {/* Save Button */}
+                <div style={{textAlign: 'center'}}>
+                    <button
+                        onClick={save}
+                        style={{
+                            padding: '12px 32px',
+                            background: 'linear-gradient(135deg, #c9a84c 0%, #b8953a 100%)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color: '#0d0d0d',
+                            fontWeight: 700,
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 8px rgba(201,168,76,0.3)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(201,168,76,0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(201,168,76,0.3)';
+                        }}
+                    >
+                        💾 Save Measurements
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
