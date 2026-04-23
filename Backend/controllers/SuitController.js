@@ -22,45 +22,56 @@ const getSuit = async (req, res) => {
     res.status(StatusCodes.OK).json({ suit })
 }
 
-const calculatePrice = (suitType, fabricType) => {
-    console.log(suitType, fabricType)
+const calculatePrice = (suitType, fabric) => {
+    console.log(suitType, fabric)
     try{
-        var price = Number(SuitTypePrice[suitType]) + Number(FabricTypePrice[fabricType])
+        // Use fabric's actual price from database, or fallback to suit type price
+        const fabricPrice = fabric && fabric.price ? Number(fabric.price) : 50
+        const suitTypePrice = Number(SuitTypePrice[suitType]) || 50
+        var price = suitTypePrice + fabricPrice
+        if (isNaN(price)) {
+            price = 150
+        }
     } catch {
-        console.log('failed to calculate price for:', suitType, fabricType)
+        console.log('failed to calculate price for:', suitType, fabric)
         var price = 150
     }
     return price
 }
 
 const createSuit = async (req, res) => {
-    const fabric_id = req.body.fabric
+    try {
+        const fabric_id = req.body.fabric
 
-    const fabric = await Fabric.findOne({_id: fabric_id})
-    const user = await User.findOne({_id: req.userID})
+        const fabric = await Fabric.findOne({_id: fabric_id})
+        const user = await User.findOne({_id: req.userID})
 
-    if (!user){
-        return res.status(StatusCodes.NOT_FOUND).json({ msg: `Invalid user id: ${fabric_id}`})
+        if (!user){
+            return res.status(StatusCodes.NOT_FOUND).json({ msg: `Invalid user id: ${fabric_id}`})
+        }
+
+        if (!fabric){
+            return res.status(StatusCodes.NOT_FOUND).json({ msg: `No fabric found with id: ${fabric_id}`})
+        }
+
+        const suit = await Suit.create({
+            type: req.body.type,
+            fabric: fabric,
+            user: user,
+            price: calculatePrice(req.body.type, fabric),
+            length: req.body.length,
+            waist: req.body.waist,
+            chest: req.body.chest,
+            arm_length: req.body.arm_length,
+            button: req.body.button,
+            image: req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : (fabric.image || '')
+        })
+
+        res.status(StatusCodes.OK).json(suit)
+    } catch (err) {
+        console.error('Error creating suit:', err);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Failed to create suit", error: err.message });
     }
-
-    if (!fabric){
-        return res.status(StatusCodes.NOT_FOUND).json({ msg: `No fabric found with id: ${fabric_id}`})
-    }
-
-    const suit = await Suit.create({
-        type: req.body.type,
-        fabric: fabric,
-        user: user,
-        price: String(calculatePrice(req.body.type, fabric.name)),
-        length: req.body.length,
-        waist: req.body.waist,
-        chest: req.body.chest,
-        arm_length: req.body.arm_length,
-        button: req.body.button,
-        image: req.file ? (req.file.secure_url || req.file.url || req.file.path || (req.file.filename ? `/uploads/${req.file.filename}` : '')) : (fabric.image || '')
-    })
-
-    res.status(StatusCodes.OK).json(suit)
 }
 
 const getPrice = async (req, res) => {

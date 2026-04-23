@@ -36,42 +36,47 @@ const getUserCart = async (req, res) => {
 }
 
 const addToCart = async (req, res) => {
-    const user = await User.findById(req.userID)
-    if (!user){
-        return res.status(StatusCodes.NOT_FOUND).json({ msg: "No User found for adding to cart!" })
+    try {
+        const user = await User.findById(req.userID)
+        if (!user){
+            return res.status(StatusCodes.NOT_FOUND).json({ msg: "No User found for adding to cart!" })
+        }
+
+        const productType = req.body.product_type
+        if(productType == ProductTypes.SUIT){
+            const suit = await Suit.findById(req.body.product_id)
+            if (!suit) {
+                return res.status(StatusCodes.NOT_FOUND).json({ msg: "Suit not found, adding to cart failed" })  
+            } 
+
+            var cartItem = await CartItem.create({
+                user: user,
+                productType: ProductTypes.SUIT,
+                product: suit
+            })
+        } else {
+            const fabric = await Fabric.findById(req.body.product_id)
+            if (!fabric){
+                return res.status(StatusCodes.NOT_FOUND).json({ msg: "Fabric not found, adding to cart failed" })
+            } 
+
+            var cartItem = await CartItem.create({
+                user: user,
+                productType: ProductTypes.FABRIC,
+                product: fabric,
+                fabricLength: req.body.fabric_length
+            })
+        }
+
+        if(!cartItem) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Error Creating Cart"})
+        }
+
+        res.status(StatusCodes.OK).json({cartItem})
+    } catch (err) {
+        console.error('Error adding to cart:', err);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Failed to add to cart", error: err.message });
     }
-
-    const productType = req.body.product_type
-    if(productType == ProductTypes.SUIT){
-        const suit = await Suit.findById(req.body.product_id)
-        if (!suit) {
-            return res.status(StatusCodes.NOT_FOUND).json({ msg: "Suit not found, adding to cart failed" })  
-        } 
-
-        var cartItem = await CartItem.create({
-            user: user,
-            productType: ProductTypes.SUIT,
-            product: suit
-        })
-    } else {
-        const fabric = await Fabric.findById(req.body.product_id)
-        if (!fabric){
-            return res.status(StatusCodes.NOT_FOUND).json({ msg: "Fabric not found, adding to cart failed" })
-        } 
-
-        var cartItem = await CartItem.create({
-            user: user,
-            productType: ProductTypes.FABRIC,
-            product: fabric,
-            fabricLength: req.body.fabric_length
-        })
-    }
-
-    if(!cartItem) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Error Creating Cart"})
-    }
-
-    res.status(StatusCodes.OK).json({cartItem})
 }
 
 const deleteCartItem = async (req, res) => {

@@ -26,7 +26,7 @@ const isAuthenticated = (req, res, next) => {
         req.userID = decoded.userID
         req.accessToken = decoded.accessToken
     } catch (err){
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Couldn't verify JWT Token!", error: err });
+        return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid or expired token!" });
     }
   
     next();
