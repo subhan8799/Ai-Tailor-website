@@ -57,7 +57,7 @@ const createSuit = async (req, res) => {
         chest: req.body.chest,
         arm_length: req.body.arm_length,
         button: req.body.button,
-        image: req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : (fabric.image || '')
+        image: req.file ? (req.file.secure_url || req.file.url || req.file.path || (req.file.filename ? `/uploads/${req.file.filename}` : '')) : (fabric.image || '')
     })
 
     res.status(StatusCodes.OK).json(suit)

@@ -29,7 +29,7 @@ const createFabric = async (req, res) => {
         color: req.body.color,
         price: req.body.price,
         stock: req.body.stock,
-        image: req.file?.path
+        image: req.file ? (req.file.secure_url || req.file.url || req.file.path || '') : ''
     })
 
     res.json({ fabric })

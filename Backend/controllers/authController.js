@@ -56,7 +56,7 @@ const register = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json({ msg: "User already exists!" })
     }
 
-    const imagePath = req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : '';
+    const imagePath = req.file ? (req.file.secure_url || req.file.url || req.file.path || (req.file.filename ? `/uploads/${req.file.filename}` : '')) : '';
 
     const user = await User.create({
         username: req.body.username,

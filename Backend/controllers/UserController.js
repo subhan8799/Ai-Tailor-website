@@ -35,7 +35,7 @@ const updateUser = async (req, res) => {
 
 const updateUserImage = async (req, res) => {
     const {id:userID} = req.params
-    const imagePath = req.file ? (req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`) : '';
+    const imagePath = req.file ? (req.file.secure_url || req.file.url || req.file.path || (req.file.filename ? `/uploads/${req.file.filename}` : '')) : '';
 
     const user = await User.findOneAndUpdate({_id: userID}, { image: imagePath }, {new:true, runValidators:true})
 

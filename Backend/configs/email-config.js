@@ -1,40 +1,36 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter for sending emails
-// Using Gmail SMTP (recommended for production)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
+// Create transporter — use Mailtrap SMTP if configured, otherwise Gmail
+const useSmtp = process.env.SMTP_HOST && process.env.SMTP_USER;
+
+const transporter = nodemailer.createTransport(
+    useSmtp
+        ? {
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT) || 2525,
+            secure: false,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASSWORD
+            }
+        }
+        : {
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        }
+);
+
+console.log('Email transporter configured for:', useSmtp ? `SMTP (${process.env.SMTP_HOST})` : 'Gmail');
+
+transporter.verify((error) => {
+    if (error) console.log('Email transporter warning:', error.message);
+    else console.log('Email transporter is ready');
 });
-
-console.log('Email transporter configured for:', process.env.EMAIL_USER ? 'Gmail' : 'SMTP');
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-console.log('SMTP_HOST:', process.env.SMTP_HOST);
-
-// Test the transporter connection
-transporter.verify((error, success) => {
-    if (error) {
-        console.log('Transporter verification failed:', error);
-    } else {
-        console.log('Transporter is ready to send emails');
-    }
-});
-
-// Alternative: Using custom SMTP server (like Mailtrap for testing)
-// const transporter = nodemailer.createTransport({
-//     host: process.env.SMTP_HOST,
-//     port: parseInt(process.env.SMTP_PORT),
-//     secure: false, // true for 465, false for other ports
-//     auth: {
-//         user: process.env.SMTP_USER,
-//         pass: process.env.SMTP_PASSWORD
-//     }
-// });
 
 // Function to send password reset email
 const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
