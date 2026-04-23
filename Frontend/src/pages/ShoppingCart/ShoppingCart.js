@@ -32,13 +32,6 @@ function ShoppingCart() {
 
   useEffect(() => { loadCart(); }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Remove this item?')) return;
-    await CartAPI.deleteFromCart(id);
-    toast('Item removed', 'success');
-    loadCart();
-  };
-
   const handleAddAnother = async (item) => {
     await CartAPI.addToCart(item.productType, item.product?._id);
     toast('Quantity +1', 'success');
