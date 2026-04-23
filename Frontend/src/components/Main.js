@@ -1,9 +1,22 @@
 import { BrowserRouter as Router, Routes as Switch, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 // Core components
 import Footer from "./layout/Footer/Footer";
 import Header from "./layout/Header/Header";
+
+// Services and widgets
+import UserAPI from "../services/UserAPI";
+import ChatbotWidget from "./layout/ChatbotWidget/ChatbotWidget";
+
+// Page components
+import FabricCompare from "../pages/FabricCompare/FabricCompare";
+import FaqPage from "../pages/FaqPage/FaqPage";
+import ShoppingCart from "../pages/ShoppingCart/ShoppingCart";
+import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess";
+import ReadymadeSuit from "../pages/ReadymadeSuit/ReadymadeSuit";
+import UserOrderList from "../pages/UserOrderList/UserOrderList";
+import CartEdit from "../pages/CartEdit/CartEdit";
 
 // Lazy loaded pages
 const Home = lazy(() => import("../pages/Home/Home"));
@@ -22,17 +35,6 @@ const AnalyticsDashboard = lazy(() => import("../pages/Admin/AnalyticsDashboard/
 const StyleRecommendation = lazy(() => import("../pages/StyleRecommendation/StyleRecommendation"));
 const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
 const SizeGuide = lazy(() => import("../pages/SizeGuide/SizeGuide"));
-import FabricCompare from "../pages/FabricCompare/FabricCompare";
-import FaqPage from "../pages/FaqPage/FaqPage";
-
-import UserAPI from "../services/UserAPI";
-import ChatbotWidget from "./layout/ChatbotWidget/ChatbotWidget";
-import { useEffect, useState } from "react";
-import ShoppingCart from "../pages/ShoppingCart/ShoppingCart";
-import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess"
-import ReadymadeSuit from "../pages/ReadymadeSuit/ReadymadeSuit";
-import UserOrderList from "../pages/UserOrderList/UserOrderList";
-import CartEdit from "../pages/CartEdit/CartEdit";
 
 const AdminOnly = ({Component}) => {
     const [isAdmin, setIsAdmin] = useState(null)
