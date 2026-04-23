@@ -94,7 +94,7 @@ const Header = (props) => {
             <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(true)}>☰</button>
             <nav className="desktop-nav">
                 {NAV_ITEMS.map(item => (<Link key={item.to} className="nav-link-item" to={item.to}>{item.label}</Link>))}
-                <Link className="nav-link-item" to="/user-order-list">Orders</Link>
+                <Link className="nav-link-item" to={userInfo?.isAdmin ? '/admin/orders' : '/user-order-list'}>Orders</Link>
             </nav>
             <div className='logo-img'><Link to="/"><h1 className='brand-title'>MZ Tailor</h1></Link></div>
             <div className='user-actions'>
@@ -128,7 +128,7 @@ const Header = (props) => {
                             </div>
                             <div className="drop-divider"></div>
                             <Link className='drop-item' to="/profile" onClick={() => setDropdownOpen(false)}>👤 My Profile</Link>
-                            <Link className='drop-item' to="/user-order-list" onClick={() => setDropdownOpen(false)}>📦 My Orders</Link>
+                            <Link className='drop-item' to={userInfo?.isAdmin ? '/admin/orders' : '/user-order-list'} onClick={() => setDropdownOpen(false)}>📦 {userInfo?.isAdmin ? 'Customer Orders' : 'My Orders'}</Link>
                             <Link className='drop-item' to="/wishlist" onClick={() => setDropdownOpen(false)}>💝 Wishlist</Link>
                             {userInfo?.isAdmin && <Link className='drop-item' to="/admin" onClick={() => setDropdownOpen(false)}>⚙️ Admin Panel</Link>}
                             {userInfo?.isAdmin && <Link className='drop-item' to="/analytics" onClick={() => setDropdownOpen(false)}>📊 Analytics</Link>}
@@ -147,7 +147,7 @@ const Header = (props) => {
             </div>
             {NAV_ITEMS.map(item => (<Link key={item.to} className="mobile-nav-item" to={item.to} onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>))}
             <Link className="mobile-nav-item" to="/add-to-cart" onClick={() => setMobileMenuOpen(false)}>🛒 Cart ({cartCount})</Link>
-            <Link className="mobile-nav-item" to="/user-order-list" onClick={() => setMobileMenuOpen(false)}>📦 Orders</Link>
+            <Link className="mobile-nav-item" to={userInfo?.isAdmin ? '/admin/orders' : '/user-order-list'} onClick={() => setMobileMenuOpen(false)}>📦 {userInfo?.isAdmin ? 'Customer Orders' : 'Orders'}</Link>
             <Link className="mobile-nav-item" to="/wishlist" onClick={() => setMobileMenuOpen(false)}>💝 Wishlist</Link>
             {userInfo?.isAdmin && <Link className="mobile-nav-item" to="/admin" onClick={() => setMobileMenuOpen(false)}>⚙️ Admin</Link>}
         </div>

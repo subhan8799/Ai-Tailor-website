@@ -10,7 +10,7 @@ const upload = multer({ storage });
 // Upload image
 router.post('/upload', [isAuthenticated, adminOnlyAccess, upload.single('image')], (req, res) => {
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
-    const path = req.file.path?.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`;
+    const path = req.file.secure_url || req.file.url || req.file.path || (req.file.filename ? `/uploads/${req.file.filename}` : '');
     res.json({ path });
 });
 

@@ -11,15 +11,25 @@ async function createSuit(fabric, type, length, waist, chest, arm_length, suit_s
         formData.append('chest', chest)
         formData.append('arm_length', arm_length)
         if (suit_screenshot) formData.append('image', suit_screenshot)
-        const res = await apiFetch('/api/v1/suit', {
+        console.log('Creating suit with:', { type, fabric: fabric._id, length, waist, chest, arm_length, hasImage: !!suit_screenshot })
+        let res = await apiFetch('/api/v1/suit', {
             method: 'POST',
             headers: {'Authorization': `Bearer ${token}`},
             body: formData
         })
-        if(!res.ok) return null
-        return res.json()
+        console.log('Suit API response status:', res.status)
+        const text = await res.text()
+        console.log('Suit API response body:', text)
+        try {
+            const data = JSON.parse(text)
+            if (!res.ok) return null
+            return data
+        } catch {
+            console.error('Failed to parse response:', text)
+            return null
+        }
     } catch(err) {
-        console.warn('Failed to create suit:', err.message)
+        console.error('Suit creation exception:', err)
         return null
     }
 }

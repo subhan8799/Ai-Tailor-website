@@ -104,13 +104,15 @@ function Visualize(){
         setIsLoading(true)
         try {
             var suit = await SuitAPI.createSuit(selectedFabric, suitType, length, waist, chest, armLength, suitScreenshot)
-            if (!suit || !suit._id) throw new Error('Failed to create suit')
+            console.log('Suit creation response:', suit)
+            if (!suit || !suit._id) throw new Error('Failed to create suit: ' + JSON.stringify(suit))
             var cart = await CartAPI.addToCart(ProductTypes.SUIT, suit._id)
+            console.log('Cart response:', cart)
             if (!cart) throw new Error('Failed to add to cart')
             navigate('/add-to-cart')
         } catch(err) {
-            console.error(err)
-            alert('Something went wrong. Please try again.')
+            console.error('Add to cart error:', err)
+            alert('Error: ' + err.message)
         } finally {
             setIsLoading(false)
         }

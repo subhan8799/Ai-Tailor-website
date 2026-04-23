@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import SuitAPI from '../../services/SuitAPI';
 import CartAPI from '../../services/CartAPI';
 import * as ProductTypes from '../../constants/ProductTypes';
 import { API, apiFetch } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
 
-const imgUrl = (p) => !p ? '/default_fabric.jpg' : p.startsWith('http') ? p : `${API}${p}`;
+const imgUrl = (p) => !p || p === '/uploads/undefined' ? '' : p.startsWith('http') ? p : `${API}${p}`;
+
+const suitIcon = (type) => {
+    if (!type) return '/suit101.png';
+    if (type.includes('double')) return '/doublebreast.png';
+    if (type.includes('tuxedo')) return '/tuxedo.png';
+    return '/suit101.png';
+};
 
 function ReadymadeSuit() {
     const [allSuit, setAllSuit] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const toast = useToast();
     const token = localStorage.getItem('token');
@@ -22,7 +31,15 @@ function ReadymadeSuit() {
             setLoading(false);
         };
         get();
-    }, []);
+        const q = searchParams.get('search');
+        if (q) setSearchQuery(q);
+    }, [searchParams]);
+
+    const filtered = allSuit.filter(s => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return s.type?.toLowerCase().includes(q) || s.fabric?.name?.toLowerCase().includes(q) || s.fabric?.color?.toLowerCase().includes(q);
+    });
 
     const handleCart = async (id) => {
         if (!token) { toast('Please login first', 'warning'); navigate('/login'); return; }
@@ -53,17 +70,23 @@ function ReadymadeSuit() {
                     Ready-Made <span style={{ color: 'var(--accent)' }}>Suits</span>
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Expertly crafted suits ready for immediate order</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400, margin: '20px auto 0' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>🔍</span>
+                    <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by type, fabric, color..."
+                        style={{ flex: 1, background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 20, padding: '8px 16px', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+                    {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>✕</button>}
+                </div>
             </div>
 
             {loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
                     <div className="spinner-border" style={{ color: 'var(--accent)', width: 48, height: 48 }} role="status" />
                 </div>
-            ) : allSuit.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>No suits available yet.</div>
+            ) : filtered.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>{searchQuery ? `No suits matching "${searchQuery}"` : 'No suits available yet.'}</div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-                    {allSuit.map((suit, i) => (
+                    {filtered.map((suit, i) => (
                         <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden', position: 'relative' }}>
                             {/* Wishlist Icon */}
                             <button onClick={() => handleWishlist(suit)} title="Add to Wishlist" style={{
@@ -75,8 +98,8 @@ function ReadymadeSuit() {
                                 backdropFilter: 'blur(4px)', transition: 'all 0.2s'
                             }}>♥</button>
 
-                            <div style={{ height: 200, overflow: 'hidden' }}>
-                                <img src={imgUrl(suit.image)} alt={suit.type} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div style={{ height: 200, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--accent) 5%, var(--bg))' }}>
+                                <img src={imgUrl(suit.image) || suitIcon(suit.type)} alt={suit.type} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                             </div>
                             <div style={{ padding: 20 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

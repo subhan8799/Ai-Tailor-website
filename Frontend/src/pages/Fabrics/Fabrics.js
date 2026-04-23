@@ -3,7 +3,7 @@ import "./Fabrics.css";
 import FabricAPI from "../../services/FabricAPI";
 import CartAPI from "../../services/CartAPI";
 import * as ProductTypes from "../../constants/ProductTypes";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from '../../components/ui/Toast/Toast';
 
 function Fabrics() {
@@ -14,10 +14,12 @@ function Fabrics() {
     const [activeFilter, setActiveFilter] = useState("All");
     const [addingToCart, setAddingToCart] = useState(false);
     const [quickAdding, setQuickAdding] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const toast = useToast();
 
-    const filters = ["All", "Cotton", "Velvet", "Linen"];
+    const filters = ["All", "Cotton", "Velvet", "Linen", "Silk", "Wool"];
 
     useEffect(() => {
         async function getFabrics() {
@@ -26,11 +28,15 @@ function Fabrics() {
             setLoading(false);
         }
         getFabrics();
-    }, []);
+        const q = searchParams.get('search');
+        if (q) setSearchQuery(q);
+    }, [searchParams]);
 
-    const filtered = fabrics.filter(f =>
-        activeFilter === "All" ? true : f.name === activeFilter
-    );
+    const filtered = fabrics.filter(f => {
+        const matchFilter = activeFilter === "All" || f.name?.toLowerCase().includes(activeFilter.toLowerCase());
+        const matchSearch = !searchQuery || f.name?.toLowerCase().includes(searchQuery.toLowerCase()) || f.color?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchFilter && matchSearch;
+    });
 
     const openCard = (fabric) => {
         setSelected(fabric);
@@ -69,6 +75,12 @@ function Fabrics() {
 
             {/* Filters */}
             <div className="fabrics-filters">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, width: '100%', maxWidth: 400, margin: '0 auto 16px' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>🔍</span>
+                    <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by name or color..."
+                        style={{ flex: 1, background: 'color-mix(in srgb, var(--accent, #c9a84c) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent, #c9a84c) 15%, transparent)', borderRadius: 20, padding: '8px 16px', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+                    {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>✕</button>}
+                </div>
                 {filters.map(f => (
                     <button
                         key={f}

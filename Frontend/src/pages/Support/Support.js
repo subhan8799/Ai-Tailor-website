@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import ChatAPIs from "../../services/ChatAPIs";
 import AuthAPI from "../../services/AuthAPI";
+import { apiFetch } from '../../services/api';
 import io from 'socket.io-client';
 
 const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -77,16 +78,29 @@ function Support() {
         if (!msg.trim() || sending) return;
         setSending(true);
 
-        // Emit via socket
         socketRef.current?.emit("send-msg", { message: msg, user_id });
 
-        // Save to DB
         const convo = await ChatAPIs.getConversation(user_id, token);
         if (convo?._id) {
             await ChatAPIs.createMessage(convo._id, token, { message: msg, fromUser: true });
         }
 
-        // Show locally
+        // Notify all admins
+        try {
+            const usersRes = await apiFetch('/api/v1/user/', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (usersRes.ok) {
+                const usersData = await usersRes.json();
+                const admins = (usersData.users || []).filter(u => u.isAdmin);
+                for (const admin of admins) {
+                    await apiFetch('/api/v1/extra/notifications', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user: admin._id, title: '💬 New support message', message: msg.slice(0, 100), type: 'system', link: '/admin/chat' })
+                    }).catch(() => {});
+                }
+            }
+        } catch { }
+
         setAllMsg(prev => [...prev, { message: msg, fromUser: true }]);
         setMsg("");
         setSending(false);

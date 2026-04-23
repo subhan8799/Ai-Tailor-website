@@ -43,7 +43,7 @@ function UserOrderList() {
           {orders.orders.map((order, i) => (
             <div key={i} className="order-card" style={{display:'block'}}>
               <div style={{display:'grid', gridTemplateColumns:'80px 1fr auto', gap:20, alignItems:'center'}}>
-              <img className="order-img" src={order.product?.image || '/default_fabric.jpg'} alt="order" />
+              <img className="order-img" src={order.product?.image ? (order.product.image.startsWith('http') ? order.product.image : `http://localhost:5000${order.product.image}`) : (order.productType === 'Suit' ? (order.product?.type?.includes('double') ? '/doublebreast.png' : order.product?.type?.includes('tuxedo') ? '/tuxedo.png' : '/suit101.png') : '/default_fabric.jpg')} alt="order" />
               <div className="order-info">
                 <div className="order-id">#{order._id}</div>
                 <div className="order-name">

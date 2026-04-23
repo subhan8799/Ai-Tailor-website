@@ -47,6 +47,19 @@ router.patch('/notifications/:id', isAuthenticated, async (req, res) => {
     res.json({ msg: 'Marked as read' });
 });
 
+router.post('/notifications', isAuthenticated, async (req, res) => {
+    try {
+        const n = await Notification.create({
+            user: req.body.user,
+            title: req.body.title,
+            message: req.body.message,
+            type: req.body.type || 'system',
+            link: req.body.link
+        });
+        res.status(201).json({ notification: n });
+    } catch (err) { res.status(400).json({ msg: err.message }); }
+});
+
 // ===== GLOBAL SEARCH =====
 router.get('/search', async (req, res) => {
     const q = req.query.q;
@@ -60,8 +73,8 @@ router.get('/search', async (req, res) => {
             db.collection('users').find({ $or: [{ username: regex }, { name: regex }, { email: regex }] }).limit(5).toArray(),
         ]);
         const results = [
-            ...fabrics.map(f => ({ type: 'Fabric', name: `${f.name} - ${f.color}`, price: f.price, id: f._id, link: '/fabrics', image: f.image })),
-            ...suits.map(s => ({ type: 'Suit', name: (s.type || '').replace('_', ' '), price: s.price, id: s._id, link: '/readymade-suit', image: s.image })),
+            ...fabrics.map(f => ({ type: 'Fabric', name: `${f.name} - ${f.color}`, price: f.price, id: f._id, link: `/fabrics?search=${encodeURIComponent(f.name)}`, image: f.image })),
+            ...suits.map(s => ({ type: 'Suit', name: (s.type || '').replace('_', ' '), price: s.price, id: s._id, link: `/readymade-suit?search=${encodeURIComponent(s.type || '')}`, image: s.image })),
             ...users.map(u => ({ type: 'User', name: u.username || u.name, id: u._id, link: '/admin' })),
         ];
         res.json({ results, total: results.length });

@@ -117,7 +117,7 @@ const createOrder = async (req, res) => {
     // Emptying Cart
     await CartItem.deleteMany({user: userID})
 
-    // Create notification
+    // Notify the ordering user
     try {
         await Notification.create({
             user: userID,
@@ -126,6 +126,21 @@ const createOrder = async (req, res) => {
             type: 'order',
             link: '/user-order-list'
         });
+    } catch { }
+
+    // Notify all admins about the new order
+    try {
+        const admins = await User.find({ isAdmin: true })
+        const orderUser = await User.findById(userID)
+        for (const admin of admins) {
+            await Notification.create({
+                user: admin._id,
+                title: '🛒 New Order Received!',
+                message: `${orderUser?.username || 'A customer'} placed an order of ${orders.length} item(s) — £${orders.reduce((s,o) => s + (o.price||0), 0)}. Review and approve it.`,
+                type: 'order',
+                link: '/admin/orders'
+            });
+        }
     } catch { }
 
     res.json({orders})
@@ -156,7 +171,10 @@ const giftOrder = async (req, res) => {
 }
 
 const getAllOrder = async (req, res) => {
-    const orders = await OrderItem.find({}).populate('product user')
+    // Only show orders from non-admin users (customers)
+    const adminUsers = await User.find({ isAdmin: true }).select('_id')
+    const adminIds = adminUsers.map(u => u._id)
+    const orders = await OrderItem.find({ user: { $nin: adminIds } }).populate('product user')
 
     if(!orders){
         return res.status(StatusCodes.NOT_FOUND).json({ msg: "No orders found!" })

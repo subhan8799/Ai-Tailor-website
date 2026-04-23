@@ -107,6 +107,18 @@ function AdminPanel() {
                     borderLeft: !active ? `3px solid ${g}` : '3px solid transparent'
                 }}>📊 Dashboard</div>
 
+                <Link to="/admin/orders" style={{
+                    display: 'block', padding: '10px 18px', cursor: 'pointer', fontSize: 13,
+                    color: '#666', background: 'transparent', textDecoration: 'none',
+                    borderLeft: '3px solid transparent'
+                }}>📦 Customer Orders</Link>
+
+                <Link to="/admin/chat" style={{
+                    display: 'block', padding: '10px 18px', cursor: 'pointer', fontSize: 13,
+                    color: '#666', background: 'transparent', textDecoration: 'none',
+                    borderLeft: '3px solid transparent'
+                }}>💬 Support Chat</Link>
+
                 <div style={{ padding: '10px 18px 6px', fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: 1.5 }}>Collections</div>
 
                 {collections.map(c => (

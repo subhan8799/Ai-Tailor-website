@@ -31,6 +31,8 @@ const DesignSuit = lazy(() => import("../pages/DesignSuit/DesignSuit"));
 const AdminPanel = lazy(() => import("../pages/Admin/AdminPanel/AdminPanel"));
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 const Reviews = lazy(() => import("../pages/Reviews/Reviews"));
+const AdminOrderList = lazy(() => import("../pages/Admin/AdminOrderList/AdminOrderList"));
+const AdminChat = lazy(() => import("../pages/Admin/AdminChat/AdminChat"));
 const AnalyticsDashboard = lazy(() => import("../pages/Admin/AnalyticsDashboard/AnalyticsDashboard"));
 const StyleRecommendation = lazy(() => import("../pages/StyleRecommendation/StyleRecommendation"));
 const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
@@ -77,6 +79,8 @@ function Main(){
             <Switch>
             {/* Admin Panel */}
             <Route path="/admin" element={<AdminOnly Component={AdminPanel} />} />
+            <Route path="/admin/orders" element={<AdminOnly Component={AdminOrderList} />} />
+            <Route path="/admin/chat" element={<AdminOnly Component={AdminChat} />} />
             <Route path="/admin/*" element={<AdminOnly Component={AdminPanel} />} />
 
             {/* Public */}
