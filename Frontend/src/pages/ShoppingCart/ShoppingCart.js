@@ -5,6 +5,7 @@ import CartAPI from '../../services/CartAPI';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch, API } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
+import { emit } from '../../services/events';
 
 const imgUrl = (p) => !p ? '/default_fabric.jpg' : p.startsWith('http') ? p : `${API}${p}`;
 
@@ -21,13 +22,14 @@ function ShoppingCart() {
     try {
       const userId = localStorage.getItem('user_id');
       const token = localStorage.getItem('token');
-      const res = await apiFetch(`/api/v1/cart/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await apiFetch(`/api/v1/cart/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       const cartItems = data.cartItems || [];
       setItems(cartItems);
       setTotalPrice(cartItems.reduce((s, i) => s + (i.product?.price || 0), 0));
     } catch { }
     setItemsLoading(false);
+    emit('cart-updated');
   };
 
   useEffect(() => { loadCart(); }, []);

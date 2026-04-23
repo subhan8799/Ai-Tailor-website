@@ -588,7 +588,7 @@ function Visualize(){
                     }}>
                         <div style={{fontSize:12, color:'#a09880', textTransform:'uppercase', letterSpacing:1, marginBottom:8}}>Estimated Price</div>
                         <div style={{fontSize:'2rem', fontWeight:700, color:'#c9a84c', fontFamily:'Playfair Display, serif'}}>
-                            {price && selectedFabric && suitType ? `£${price}` : (
+                            {price > 0 && selectedFabric && suitType ? `£${price}` : (
                                 <div style={{fontSize:13, color:'#6b6355'}}>
                                     {!selectedFabric && !suitType ? '← Select fabric & suit type' :
                                      !selectedFabric ? '← Select a fabric' :

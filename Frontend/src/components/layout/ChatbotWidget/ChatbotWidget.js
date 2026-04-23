@@ -9,7 +9,7 @@ async function getUserOrders() {
 async function getUserCart() {
     const token = localStorage.getItem('token'), userId = localStorage.getItem('user_id');
     if (!token || !userId) return null;
-    try { const r = await apiFetch(`/api/v1/cart/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); return d.cartItems || []; } catch { return null; }
+    try { const r = await apiFetch(`/api/v1/cart/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); return d.cartItems || []; } catch { return null; }
 }
 async function getFabrics() {
     try { const r = await apiFetch('/api/v1/fabric'); const d = await r.json(); return d.fabrics || []; } catch { return []; }

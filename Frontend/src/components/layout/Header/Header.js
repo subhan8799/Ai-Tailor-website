@@ -36,11 +36,11 @@ const Header = (props) => {
         try {
             const uid = localStorage.getItem('user_id');
             const tok = localStorage.getItem('token');
-            if (!uid || !tok) return;
-            const cartRes = await apiFetch(`/api/v1/cart/${uid}`, { headers: { 'Authorization': `Bearer ${tok}` } });
+            if (!uid || !tok) { setCartCount(0); return; }
+            const cartRes = await apiFetch(`/api/v1/cart/user/${uid}`, { headers: { 'Authorization': `Bearer ${tok}` } });
             const cartData = await cartRes.json();
             setCartCount(cartData.cartItems?.length || 0);
-        } catch { }
+        } catch { setCartCount(0); }
     };
 
     useEffect(() => {
@@ -54,8 +54,8 @@ const Header = (props) => {
             }
         }
         load()
-        // Listen for cart changes
-        const unsub = on('cart-updated', loadCartCount);
+        // Listen for cart changes (small delay to let backend commit)
+        const unsub = on('cart-updated', () => setTimeout(loadCartCount, 200));
         return () => unsub();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

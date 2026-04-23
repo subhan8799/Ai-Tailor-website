@@ -20,7 +20,7 @@ function CartEdit() {
             if (!cartId) { setLoading(false); return; }
             try {
                 const userId = localStorage.getItem('user_id');
-                const res = await apiFetch(`/api/v1/cart/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await apiFetch(`/api/v1/cart/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
                 const found = data.cartItems?.find(i => i._id === cartId);
                 setItem(found || null);
