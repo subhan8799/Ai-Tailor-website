@@ -663,8 +663,6 @@ In sprint 3, we finished two features and started working on the suit visualizin
  - ✅ Suit Visualization Prototype
  - ✅ Redesign landing page
  - ✅ Logout functionality on Frontend
- - ❌ Connecting Admin API with frontend
- - ❌ Handling image uploads
 
 *Plans for next Sprint:* \
 For the 4th and final sprint, we have to finish the project so we just need to finish as much features as possible. We will focus on finishing implementing the features listed above and refine them as we go. 
