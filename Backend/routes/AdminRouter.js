@@ -56,22 +56,30 @@ router.post('/collection/:name', [isAuthenticated, adminOnlyAccess], async (req,
     }
 });
 
+// Helper to parse ID (handles both string and ObjectId)
+const parseId = (id) => {
+    try { return new mongoose.Types.ObjectId(id); }
+    catch { return id; }
+};
+
 // Update document
 router.patch('/collection/:name/:id', [isAuthenticated, adminOnlyAccess], async (req, res) => {
     try {
         const update = { ...req.body };
         delete update._id;
-        // Convert numeric strings to numbers
+        delete update.__v;
         for (const key of Object.keys(update)) {
-            if (!isNaN(update[key]) && update[key] !== '' && update[key] !== true && update[key] !== false) {
+            if (update[key] === '') continue;
+            if (!isNaN(update[key]) && update[key] !== '' && update[key] !== 'true' && update[key] !== 'false') {
                 update[key] = Number(update[key]);
             }
             if (update[key] === 'true') update[key] = true;
             if (update[key] === 'false') update[key] = false;
         }
-        await mongoose.connection.db.collection(req.params.name)
-            .updateOne({ _id: new mongoose.Types.ObjectId(req.params.id) }, { $set: update });
-        res.json({ msg: 'Updated' });
+        const result = await mongoose.connection.db.collection(req.params.name)
+            .updateOne({ _id: parseId(req.params.id) }, { $set: update });
+        if (result.matchedCount === 0) return res.status(404).json({ msg: 'Record not found' });
+        res.json({ msg: 'Updated', modifiedCount: result.modifiedCount });
     } catch (err) {
         res.status(400).json({ msg: err.message });
     }
@@ -80,8 +88,9 @@ router.patch('/collection/:name/:id', [isAuthenticated, adminOnlyAccess], async 
 // Delete document
 router.delete('/collection/:name/:id', [isAuthenticated, adminOnlyAccess], async (req, res) => {
     try {
-        await mongoose.connection.db.collection(req.params.name)
-            .deleteOne({ _id: new mongoose.Types.ObjectId(req.params.id) });
+        const result = await mongoose.connection.db.collection(req.params.name)
+            .deleteOne({ _id: parseId(req.params.id) });
+        if (result.deletedCount === 0) return res.status(404).json({ msg: 'Record not found' });
         res.json({ msg: 'Deleted' });
     } catch (err) {
         res.status(400).json({ msg: err.message });

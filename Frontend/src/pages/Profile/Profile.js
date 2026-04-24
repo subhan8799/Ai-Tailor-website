@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch, API } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
+import { getDisplayImage } from '../../utils/helpers';
 
-const imgUrl = (p) => !p ? '' : p.startsWith('http') ? p : `${API}${p}`;
+const imgUrl = (p) => !p || p === '/uploads/undefined' ? '' : p.startsWith('http') ? p : `${API}${p}`;
 
 function Profile() {
     const [user, setUser] = useState(null);
@@ -186,7 +187,7 @@ function Profile() {
                             {orders.filter(o => o.productType === 'Suit').map((o, i) => (
                                 <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden' }}>
                                     <div style={{ height: 140, background: 'color-mix(in srgb, var(--accent) 5%, var(--bg))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <img src={imgUrl(o.product?.image) || '/default_fabric.jpg'} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                                        <img src={getDisplayImage(o.product?.image, o.productType, o.product?.type)} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                                     </div>
                                     <div style={{ padding: 16 }}>
                                         <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{o.product?.type?.replace('_', ' ') || 'Suit'}</div>
@@ -393,20 +394,51 @@ function AppointmentBooking() {
     const [appointments, setAppointments] = useState([]);
     const [form, setForm] = useState({ type: 'virtual', date: '', timeSlot: '', notes: '' });
     const [creating, setCreating] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('user_id');
     const toast = useToast();
 
     const timeSlots = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
 
     const loadAppointments = async () => {
         try {
-            const res = await apiFetch('/api/v1/pro/appointments', { headers: { 'Authorization': `Bearer ${token}` } });
+            // Admin sees all, customer sees own
+            const url = isAdmin ? '/api/v1/pro/appointments?all=true' : '/api/v1/pro/appointments';
+            const res = await apiFetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
             setAppointments(data.appointments || []);
         } catch { }
     };
 
-    useEffect(() => { loadAppointments(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        async function checkAdmin() {
+            try {
+                const res = await apiFetch(`/api/v1/user/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                setIsAdmin(data.user?.isAdmin || false);
+            } catch { }
+        }
+        checkAdmin();
+    }, [userId, token]);
+
+    useEffect(() => {
+        loadAppointments();
+        const interval = setInterval(loadAppointments, 10000);
+        return () => clearInterval(interval);
+    }, [isAdmin, token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const updateStatus = async (id, status) => {
+        try {
+            await apiFetch(`/api/v1/pro/appointments/${id}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            toast(`Appointment ${status} ✓`, 'success');
+            loadAppointments();
+        } catch { toast('Update failed', 'error'); }
+    };
 
     const book = async () => {
         if (!form.date || !form.timeSlot) { toast('Please select date and time', 'warning'); return; }
@@ -426,11 +458,26 @@ function AppointmentBooking() {
         } catch { toast('Booking failed. Try again.', 'error'); }
     };
 
+    const deleteAppointment = async (id) => {
+        if (!window.confirm('Cancel this appointment?')) return;
+        try {
+            await apiFetch(`/api/v1/pro/appointments/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            toast('Appointment cancelled ✓', 'success');
+            loadAppointments();
+        } catch { toast('Failed to cancel', 'error'); }
+    };
+
+    const userPic = (u) => {
+        if (!u?.image || u.image === '/uploads/undefined') return '';
+        if (u.image.startsWith('http')) return u.image;
+        return 'http://localhost:5000' + u.image;
+    };
+
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>Schedule a fitting consultation</p>
-                <button onClick={() => setCreating(!creating)} style={{ padding: '8px 18px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>+ Book Appointment</button>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>{isAdmin ? 'Manage all customer appointments' : 'Schedule a fitting consultation'}</p>
+                {!isAdmin && <button onClick={() => setCreating(!creating)} style={{ padding: '8px 18px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--btn-radius)', color: 'var(--bg)', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>+ Book Appointment</button>}
             </div>
 
             {creating && (
@@ -474,17 +521,43 @@ function AppointmentBooking() {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {appointments.map((a, i) => (
-                        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 12, padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{a.type === 'virtual' ? '🖥️ Virtual' : '🏪 In-Store'} Consultation</div>
-                                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>📅 {new Date(a.date).toLocaleDateString()} · ⏰ {a.timeSlot}</div>
+                        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 12, padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                                {isAdmin && a.user && (
+                                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, border: '2px solid color-mix(in srgb, var(--accent) 30%, transparent)' }}>
+                                        {userPic(a.user) ? <img src={userPic(a.user)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 700 }}>{(a.user.username || '?').charAt(0).toUpperCase()}</span>}
+                                    </div>
+                                )}
+                                <div>
+                                    {isAdmin && a.user && <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 2 }}>{a.user.username || a.user.email}</div>}
+                                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{a.type === 'virtual' ? '🖥️ Virtual' : '🏪 In-Store'} Consultation</div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>📅 {new Date(a.date).toLocaleDateString()} · ⏰ {a.timeSlot}</div>
+                                    {a.notes && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>📝 {a.notes}</div>}
+                                </div>
                             </div>
-                            <span style={{
-                                padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                                background: a.status === 'confirmed' ? 'rgba(46,204,113,0.15)' : a.status === 'completed' ? 'rgba(201,168,76,0.15)' : 'rgba(255,193,7,0.15)',
-                                color: a.status === 'confirmed' ? '#2ecc71' : a.status === 'completed' ? 'var(--accent)' : '#ffc107',
-                                textTransform: 'uppercase'
-                            }}>{a.status}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                                {isAdmin ? (
+                                    <select value={a.status} onChange={e => updateStatus(a._id, e.target.value)}
+                                        style={{ padding: '6px 10px', background: 'var(--bg-input, #1a1a1a)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
+                                        <option value="pending">⏳ Pending</option>
+                                        <option value="confirmed">✅ Confirmed</option>
+                                        <option value="completed">🎉 Completed</option>
+                                        <option value="cancelled">❌ Cancelled</option>
+                                    </select>
+                                ) : (
+                                    <>
+                                        <span style={{
+                                            padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                                            background: a.status === 'confirmed' ? 'rgba(46,204,113,0.15)' : a.status === 'completed' ? 'rgba(201,168,76,0.15)' : a.status === 'cancelled' ? 'rgba(220,53,69,0.15)' : 'rgba(255,193,7,0.15)',
+                                            color: a.status === 'confirmed' ? '#2ecc71' : a.status === 'completed' ? 'var(--accent)' : a.status === 'cancelled' ? '#e74c3c' : '#ffc107',
+                                            textTransform: 'uppercase'
+                                        }}>{a.status}</span>
+                                        {a.status === 'pending' && (
+                                            <button onClick={() => deleteAppointment(a._id)} style={{ padding: '4px 10px', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)', borderRadius: 8, color: '#e74c3c', fontSize: 11, cursor: 'pointer' }}>❌ Cancel</button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>

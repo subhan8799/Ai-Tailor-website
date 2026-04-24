@@ -3,8 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { apiFetch, API } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
 import CartAPI from '../../services/CartAPI';
-
-const imgUrl = (p) => !p ? '/default_fabric.jpg' : p.startsWith('http') ? p : `${API}${p}`;
+import { getDisplayImage } from '../../utils/helpers';
 
 function CartEdit() {
     const [searchParams] = useSearchParams();
@@ -53,7 +52,7 @@ function CartEdit() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden' }}>
                 {/* Product Image */}
                 <div style={{ height: 200, overflow: 'hidden' }}>
-                    <img src={imgUrl(p?.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={getDisplayImage(p?.image, item.productType, p?.type)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
                 <div style={{ padding: 24 }}>

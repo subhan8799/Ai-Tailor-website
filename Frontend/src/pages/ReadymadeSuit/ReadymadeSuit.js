@@ -5,20 +5,16 @@ import CartAPI from '../../services/CartAPI';
 import * as ProductTypes from '../../constants/ProductTypes';
 import { API, apiFetch } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
+import { getDisplayImage } from '../../utils/helpers';
 
 const imgUrl = (p) => !p || p === '/uploads/undefined' ? '' : p.startsWith('http') ? p : `${API}${p}`;
-
-const suitIcon = (type) => {
-    if (!type) return '/suit101.png';
-    if (type.includes('double')) return '/doublebreast.png';
-    if (type.includes('tuxedo')) return '/tuxedo.png';
-    return '/suit101.png';
-};
 
 function ReadymadeSuit() {
     const [allSuit, setAllSuit] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const perPage = 12;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const toast = useToast();
@@ -40,6 +36,8 @@ function ReadymadeSuit() {
         const q = searchQuery.toLowerCase();
         return s.type?.toLowerCase().includes(q) || s.fabric?.name?.toLowerCase().includes(q) || s.fabric?.color?.toLowerCase().includes(q);
     });
+    const totalPages = Math.ceil(filtered.length / perPage);
+    const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
     const handleCart = async (id) => {
         if (!token) { toast('Please login first', 'warning'); navigate('/login'); return; }
@@ -84,9 +82,9 @@ function ReadymadeSuit() {
                 </div>
             ) : filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>{searchQuery ? `No suits matching "${searchQuery}"` : 'No suits available yet.'}</div>
-            ) : (
+            ) : (<>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-                    {filtered.map((suit, i) => (
+                    {paginated.map((suit, i) => (
                         <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden', position: 'relative' }}>
                             {/* Wishlist Icon */}
                             <button onClick={() => handleWishlist(suit)} title="Add to Wishlist" style={{
@@ -99,7 +97,7 @@ function ReadymadeSuit() {
                             }}>♥</button>
 
                             <div style={{ height: 200, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--accent) 5%, var(--bg))' }}>
-                                <img src={imgUrl(suit.image) || suitIcon(suit.type)} alt={suit.type} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                <img src={getDisplayImage(suit.image, 'Suit', suit.type)} alt={suit.type} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                             </div>
                             <div style={{ padding: 20 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -125,7 +123,19 @@ function ReadymadeSuit() {
                         </div>
                     ))}
                 </div>
-            )}
+                {filtered.length > perPage && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '20px 0' }}>
+                        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                            style={{ padding: '6px 12px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, color: page === 1 ? 'var(--text-muted)' : 'var(--accent)', fontSize: 12, cursor: page === 1 ? 'default' : 'pointer' }}>← Prev</button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+                            <button key={p} onClick={() => setPage(p)} style={{ width: 32, height: 32, borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: p === page ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 6%, transparent)', color: p === page ? 'var(--bg)' : 'var(--text-muted)', border: p === page ? 'none' : '1px solid color-mix(in srgb, var(--accent) 12%, transparent)' }}>{p}</button>
+                        ))}
+                        <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                            style={{ padding: '6px 12px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, color: page === totalPages ? 'var(--text-muted)' : 'var(--accent)', fontSize: 12, cursor: page === totalPages ? 'default' : 'pointer' }}>Next →</button>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{filtered.length} suits</span>
+                    </div>
+                )}
+            </>)}
         </div>
     );
 }

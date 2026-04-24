@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch, API } from '../../services/api';
 import CartAPI from '../../services/CartAPI';
-
-const imgUrl = (p) => !p ? '/default_fabric.jpg' : p.startsWith('http') ? p : `${API}${p}`;
+import { getDisplayImage } from '../../utils/helpers';
 
 function WishlistPage() {
     const [items, setItems] = useState([]);
@@ -54,7 +53,7 @@ function WishlistPage() {
                     {items.map((item, i) => (
                         <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius)', overflow: 'hidden' }}>
                             <div style={{ height: 160, overflow: 'hidden' }}>
-                                <img src={imgUrl(item.product?.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={getDisplayImage(item.product?.image, item.productType, item.product?.type)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                             <div style={{ padding: 16 }}>
                                 <div style={{ fontSize: 10, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 1 }}>{item.productType}</div>

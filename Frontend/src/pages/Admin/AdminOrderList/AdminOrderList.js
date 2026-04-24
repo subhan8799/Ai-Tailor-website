@@ -8,6 +8,8 @@ function AdminOrderList() {
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [page, setPage] = useState(1);
+    const perPage = 10;
     const toast = useToast();
 
     async function getAllOrders() {
@@ -46,6 +48,8 @@ function AdminOrderList() {
     ];
 
     const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+    const totalPages = Math.ceil(filtered.length / perPage);
+    const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
     const statusColor = (s) => {
         if (s === OrderStatus.DELIVERED) return '#2ecc71';
@@ -86,7 +90,7 @@ function AdminOrderList() {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {filtered.map((order, i) => (
+                    {paginated.map((order, i) => (
                         <div key={i} style={{
                             background: 'var(--bg-card)',
                             border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
@@ -142,6 +146,20 @@ function AdminOrderList() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {!isLoading && filtered.length > perPage && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '20px 0' }}>
+                    <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                        style={{ padding: '6px 12px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, color: page === 1 ? 'var(--text-muted)' : 'var(--accent)', fontSize: 12, cursor: page === 1 ? 'default' : 'pointer' }}>← Prev</button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+                        <button key={p} onClick={() => setPage(p)} style={{ width: 32, height: 32, borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: p === page ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 6%, transparent)', color: p === page ? 'var(--bg)' : 'var(--text-muted)', border: p === page ? 'none' : '1px solid color-mix(in srgb, var(--accent) 12%, transparent)' }}>{p}</button>
+                    ))}
+                    <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                        style={{ padding: '6px 12px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', borderRadius: 8, color: page === totalPages ? 'var(--text-muted)' : 'var(--accent)', fontSize: 12, cursor: page === totalPages ? 'default' : 'pointer' }}>Next →</button>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{filtered.length} total</span>
                 </div>
             )}
         </div>

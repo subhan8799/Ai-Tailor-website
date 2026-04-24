@@ -8,7 +8,7 @@ import NotificationBell from '../NotificationBell/NotificationBell';
 import { apiFetch, API } from '../../../services/api';
 import { on } from '../../../services/events';
 
-const NAV_ITEMS = [
+const NAV_ITEMS_USER = [
     { label: 'Home', to: '/' },
     { label: 'Design', to: '/design' },
     { label: 'Fabrics', to: '/fabrics' },
@@ -16,6 +16,16 @@ const NAV_ITEMS = [
     { label: 'Reviews', to: '/reviews' },
     { label: 'Style Guide', to: '/style-guide' },
     { label: 'Support', to: '/support' },
+];
+
+const NAV_ITEMS_ADMIN = [
+    { label: 'Home', to: '/' },
+    { label: 'Design', to: '/design' },
+    { label: 'Fabrics', to: '/fabrics' },
+    { label: 'Suits', to: '/readymade-suit' },
+    { label: 'Reviews', to: '/reviews' },
+    { label: 'Style Guide', to: '/style-guide' },
+    { label: 'Support', to: '/admin/chat' },
 ];
 
 const imgUrl = (path) => {
@@ -93,7 +103,7 @@ const Header = (props) => {
         <header>
             <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(true)}>☰</button>
             <nav className="desktop-nav">
-                {NAV_ITEMS.map(item => (<Link key={item.to} className="nav-link-item" to={item.to}>{item.label}</Link>))}
+                {(userInfo?.isAdmin ? NAV_ITEMS_ADMIN : NAV_ITEMS_USER).map(item => (<Link key={item.to} className="nav-link-item" to={item.to}>{item.label}</Link>))}
                 <Link className="nav-link-item" to={userInfo?.isAdmin ? '/admin/orders' : '/user-order-list'}>Orders</Link>
             </nav>
             <div className='logo-img'><Link to="/"><h1 className='brand-title'>MZ Tailor</h1></Link></div>
@@ -145,7 +155,7 @@ const Header = (props) => {
                 <span className="mobile-brand">MZ Tailor</span>
                 <button className="mobile-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
             </div>
-            {NAV_ITEMS.map(item => (<Link key={item.to} className="mobile-nav-item" to={item.to} onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>))}
+            {(userInfo?.isAdmin ? NAV_ITEMS_ADMIN : NAV_ITEMS_USER).map(item => (<Link key={item.to} className="mobile-nav-item" to={item.to} onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>))}
             <Link className="mobile-nav-item" to="/add-to-cart" onClick={() => setMobileMenuOpen(false)}>🛒 Cart ({cartCount})</Link>
             <Link className="mobile-nav-item" to={userInfo?.isAdmin ? '/admin/orders' : '/user-order-list'} onClick={() => setMobileMenuOpen(false)}>📦 {userInfo?.isAdmin ? 'Customer Orders' : 'Orders'}</Link>
             <Link className="mobile-nav-item" to="/wishlist" onClick={() => setMobileMenuOpen(false)}>💝 Wishlist</Link>

@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch, API } from '../../../services/api';
-
-const imgUrl = (p) => !p ? '' : p.startsWith('http') ? p : `${API}${p}`;
+import { getDisplayImage } from '../../../utils/helpers';
 
 function GlobalSearch() {
     const [query, setQuery] = useState('');
@@ -62,7 +61,7 @@ function GlobalSearch() {
                             onMouseEnter={e => e.currentTarget.style.background = 'color-mix(in srgb, var(--accent) 6%, transparent)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                             {r.image && (
-                                <img src={imgUrl(r.image)} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(128,128,128,0.1)' }} />
+                                <img src={getDisplayImage(r.image, r.type, r.name)} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(128,128,128,0.1)' }} />
                             )}
                             <div style={{ flex: 1 }}>
                                 <span style={{ fontSize: 9, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 1 }}>{r.type}</span>

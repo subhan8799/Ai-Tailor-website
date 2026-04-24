@@ -6,14 +6,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch, API } from '../../services/api';
 import { useToast } from '../../components/ui/Toast/Toast';
 import { emit } from '../../services/events';
+import { getDisplayImage } from '../../utils/helpers';
 
-const suitIcon = (type) => {
-    if (!type) return '/suit101.png';
-    if (type.includes('double')) return '/doublebreast.png';
-    if (type.includes('tuxedo')) return '/tuxedo.png';
-    return '/suit101.png';
-};
-const imgUrl = (p) => !p ? '/default_fabric.jpg' : p.startsWith('http') ? p : `${API}${p}`;
+const imgUrl = (p) => !p || p === '/uploads/undefined' ? '' : p.startsWith('http') ? p : `${API}${p}`;
 
 function ShoppingCart() {
   const [items, setItems] = useState([]);
@@ -101,7 +96,7 @@ function ShoppingCart() {
               </div>
             ) : groupedItems.map(item => (
               <div key={item._id} style={{ background: 'var(--bg-card)', border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)', borderRadius: 'var(--card-radius, 14px)', padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
-                <img src={item.product?.image ? imgUrl(item.product.image) : (item.productType === ProductTypes.SUIT ? suitIcon(item.product?.type) : '/default_fabric.jpg')} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', flexShrink: 0 }} />
+                <img src={getDisplayImage(item.product?.image, item.productType, item.product?.type)} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', flexShrink: 0 }} />
 
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 10, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 1 }}>{item.productType}</div>

@@ -174,7 +174,7 @@ const getAllOrder = async (req, res) => {
     // Only show orders from non-admin users (customers)
     const adminUsers = await User.find({ isAdmin: true }).select('_id')
     const adminIds = adminUsers.map(u => u._id)
-    const orders = await OrderItem.find({ user: { $nin: adminIds } }).populate('product user')
+    const orders = await OrderItem.find({ user: { $nin: adminIds } }).sort({ timestamp: -1 }).populate('product user')
 
     if(!orders){
         return res.status(StatusCodes.NOT_FOUND).json({ msg: "No orders found!" })
@@ -188,7 +188,7 @@ const getAllOrder = async (req, res) => {
 }
 
 const getUserOrder = async (req, res) => {
-    const orders = await OrderItem.find({user: req.params.id}).populate('product')
+    const orders = await OrderItem.find({user: req.params.id}).sort({ timestamp: -1 }).populate('product')
     
     if(!orders){
         return res.status(StatusCodes.NOT_FOUND).json({ msg: "No orders found!" })

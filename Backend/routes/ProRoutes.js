@@ -36,17 +36,47 @@ router.delete('/reviews/:id', isAuthenticated, async (req, res) => {
 // ===== APPOINTMENTS =====
 router.get('/appointments', isAuthenticated, async (req, res) => {
     const query = req.query.all === 'true' ? {} : { user: req.userID };
-    const appointments = await Appointment.find(query).populate('user', 'username email').sort({ date: 1 });
+    const appointments = await Appointment.find(query).populate('user', 'username email image').sort({ date: 1 });
     res.json({ appointments });
 });
 
 router.post('/appointments', isAuthenticated, async (req, res) => {
     const appointment = await Appointment.create({ user: req.userID, ...req.body });
+    // Notify admins
+    try {
+        const { Notification } = require('../models/Extra');
+        const User = require('../models/User');
+        const admins = await User.find({ isAdmin: true });
+        const customer = await User.findById(req.userID);
+        for (const admin of admins) {
+            await Notification.create({
+                user: admin._id,
+                title: '📅 New Appointment Booked',
+                message: `${customer?.username || 'A customer'} booked a ${req.body.type} appointment on ${new Date(req.body.date).toLocaleDateString()} at ${req.body.timeSlot}`,
+                type: 'order',
+                link: '/profile'
+            });
+        }
+    } catch { }
     res.status(201).json({ appointment });
 });
 
 router.patch('/appointments/:id', isAuthenticated, async (req, res) => {
     const appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Notify user if status changed
+    if (req.body.status && appointment) {
+        const { Notification } = require('../models/Extra');
+        const emoji = { pending: '⏳', confirmed: '✅', completed: '🎉', cancelled: '❌' };
+        try {
+            await Notification.create({
+                user: appointment.user,
+                title: `Appointment ${req.body.status} ${emoji[req.body.status] || ''}`,
+                message: `Your ${appointment.type} appointment on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} is now ${req.body.status}`,
+                type: 'system',
+                link: '/profile'
+            });
+        } catch { }
+    }
     res.json({ appointment });
 });
 

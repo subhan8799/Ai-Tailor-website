@@ -1,14 +1,46 @@
 // Shared utility functions to eliminate code duplication
 
-import { API } from './api';
+import { API } from '../services/api';
+
+const DUMMY_ICONS = {
+    suit: '/suit101.png',
+    single_breast: '/suit101.png',
+    double_breast: '/doublebreast.png',
+    tuxedo: '/tuxedo.png',
+    fabric: '/default_fabric.jpg',
+    user: '/admin.png',
+    default: '/default_fabric.jpg',
+};
 
 /**
- * Format image URL to work with backend API
+ * Format image URL — returns valid URL or fallback icon
  */
 export const imgUrl = (path) => {
-    if (!path) return '';
+    if (!path || path === '/uploads/undefined' || path === 'undefined') return '';
     if (path.startsWith('http')) return path;
     return `${API}${path}`;
+};
+
+/**
+ * Get fallback icon based on product type and suit type
+ */
+export const fallbackIcon = (productType, suitType) => {
+    if (productType === 'Suit' || productType === 'suit') {
+        if (suitType?.includes('double')) return DUMMY_ICONS.double_breast;
+        if (suitType?.includes('tuxedo')) return DUMMY_ICONS.tuxedo;
+        return DUMMY_ICONS.suit;
+    }
+    if (productType === 'Fabric' || productType === 'fabric') return DUMMY_ICONS.fabric;
+    if (productType === 'User' || productType === 'user') return DUMMY_ICONS.user;
+    return DUMMY_ICONS.default;
+};
+
+/**
+ * Get display image — tries real image first, falls back to icon
+ */
+export const getDisplayImage = (image, productType, suitType) => {
+    const url = imgUrl(image);
+    return url || fallbackIcon(productType, suitType);
 };
 
 /**

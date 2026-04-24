@@ -15,6 +15,8 @@ function Fabrics() {
     const [addingToCart, setAddingToCart] = useState(false);
     const [quickAdding, setQuickAdding] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const perPage = 12;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const toast = useToast();
@@ -37,6 +39,9 @@ function Fabrics() {
         const matchSearch = !searchQuery || f.name?.toLowerCase().includes(searchQuery.toLowerCase()) || f.color?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchFilter && matchSearch;
     });
+
+    const totalPages = Math.ceil(filtered.length / perPage);
+    const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
     const openCard = (fabric) => {
         setSelected(fabric);
@@ -100,8 +105,9 @@ function Fabrics() {
             ) : filtered.length === 0 ? (
                 <div className="fabrics-empty">No fabrics found.</div>
             ) : (
+                <>
                 <div className="fabrics-grid">
-                    {filtered.map((fabric, i) => (
+                    {paginated.map((fabric, i) => (
                         <div key={i} className="fabric-card" onClick={() => openCard(fabric)}>
                             <div className="fabric-card-img">
                                 <img src={fabric.image || '/default_fabric.jpg'} alt={fabric.name} />
@@ -129,6 +135,18 @@ function Fabrics() {
                         </div>
                     ))}
                 </div>
+                {filtered.length > perPage && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '20px 0' }}>
+                        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                            className={`filter-btn ${page === 1 ? '' : 'active'}`} style={{ padding: '6px 14px' }}>← Prev</button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+                            <button key={p} onClick={() => setPage(p)} className={`filter-btn ${p === page ? 'active' : ''}`} style={{ minWidth: 36 }}>{p}</button>
+                        ))}
+                        <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                            className={`filter-btn ${page === totalPages ? '' : 'active'}`} style={{ padding: '6px 14px' }}>Next →</button>
+                    </div>
+                )}
+                </>
             )}
 
             {/* Detail Modal */}
